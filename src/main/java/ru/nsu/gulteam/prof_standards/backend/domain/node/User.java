@@ -30,6 +30,11 @@ public class User {
     private String passwordHash;
 
     /**
+     * Соль для хэширования пароля
+     */
+    private String salt;
+
+    /**
      * Роль
      */
     private UserRole role;
@@ -79,5 +84,13 @@ public class User {
 
     public void setRole(UserRole role) {
         this.role = role;
+    }
+
+    public String getSalt() {
+        return salt;
+    }
+
+    public void setSalt(String salt) {
+        this.salt = salt;
     }
 }
