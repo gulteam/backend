@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import ru.nsu.gulteam.prof_standards.backend.domain.node.User;
 import ru.nsu.gulteam.prof_standards.backend.domain.repository.UserRepository;
-import ru.nsu.gulteam.prof_standards.backend.service.model.LoginDetails;
 
 import java.util.Collections;
 
@@ -29,7 +28,8 @@ public class UserService implements UserDetailsService {
         }
 
         User user = userRepository.findByLoginIgnoreCase(username.trim());
-        return new LoginDetails(user.getLogin(), user.getPasswordHash(),
+        return new org.springframework.security.core.userdetails.User(user.getLogin(),
+                user.getPasswordHash(),
                 Collections.singleton(new SimpleGrantedAuthority(user.getRole().toString())));
     }
 }

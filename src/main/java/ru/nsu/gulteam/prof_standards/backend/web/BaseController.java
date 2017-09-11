@@ -7,13 +7,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
+import ru.nsu.gulteam.prof_standards.backend.exception.NotAuthorizedException;
 
 import javax.servlet.http.HttpServletRequest;
 
 public class BaseController {
     private static final Logger logger = LoggerFactory.getLogger(BaseController.class);
 
-    @ExceptionHandler(AccessDeniedException.class)
+    @ExceptionHandler({AccessDeniedException.class, NotAuthorizedException.class})
     @ResponseBody
     public ResponseEntity<?> handleException(HttpServletRequest request, AccessDeniedException e) {
         return ResponseEntity

@@ -30,16 +30,19 @@ public class User {
     private String passwordHash;
 
     /**
-     * Соль для хэширования пароля
-     */
-    private String salt;
-
-    /**
      * Роль
      */
     private UserRole role;
 
     public User() {
+    }
+
+    public User(String firstName, String secondName, String login, String passwordHash, UserRole role) {
+        this.firstName = firstName;
+        this.secondName = secondName;
+        this.login = login;
+        this.passwordHash = passwordHash;
+        this.role = role;
     }
 
     public Long getId() {
@@ -84,13 +87,5 @@ public class User {
 
     public void setRole(UserRole role) {
         this.role = role;
-    }
-
-    public String getSalt() {
-        return salt;
-    }
-
-    public void setSalt(String salt) {
-        this.salt = salt;
     }
 }
