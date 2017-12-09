@@ -24,11 +24,6 @@ public class UserDto {
     @NotNull
     private String login;
 
-    /**
-     * Роль
-     */
-    @NotNull
-    private String role;
 
     public UserDto() {
     }
