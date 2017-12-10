@@ -11,7 +11,7 @@ public class TemplateCourse {
     @Property(name = "ID")
     private Long id;
 
-    @Property(name = "NAME")
+    @Property(name = "AMOUNT")
     private int amount;
 
     @Property(name = "SEMESTER")
