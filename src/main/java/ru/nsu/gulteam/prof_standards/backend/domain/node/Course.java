@@ -12,19 +12,19 @@ public class Course {
     private Long id;
 
     @Property(name = "AMOUNT")
-    private int amount;
+    private int amount = 0;
 
     @Property(name = "SEMESTER")
-    private int semester;
+    private int semester = 1;
 
     @Property(name = "ATTESTATION_FORM")
-    private AttestationForm attestationForm;
+    private AttestationForm attestationForm = AttestationForm.CREDIT;
 
     @Property(name = "NAME")
-    private String name;
+    private String name = "";
 
     @Property(name = "APPROVED")
-    private boolean approved;
+    private boolean approved = false;
 
     public Course() {
     }
