@@ -8,7 +8,6 @@ import ru.nsu.gulteam.prof_standards.backend.domain.node.User;
 import ru.nsu.gulteam.prof_standards.backend.web.dto.request.RegisterData;
 import ru.nsu.gulteam.prof_standards.backend.web.dto.response.UserDto;
 
-// Todo: check, why @Mapper not working
 @Configuration
 public class UserMapper {
     PasswordEncoder passwordEncoder;

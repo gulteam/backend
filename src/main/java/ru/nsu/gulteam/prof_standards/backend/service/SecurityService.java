@@ -73,7 +73,6 @@ public class SecurityService {
             throw new RegisterException("This login is already used");
         }
 
-        // Todo: is it normal use mapper for this case?
         User user = userMapper.toUser(registerData);
         user = userRepository.save(user);
         return user;
