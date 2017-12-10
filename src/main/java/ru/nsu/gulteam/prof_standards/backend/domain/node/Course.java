@@ -68,4 +68,12 @@ public class Course {
     public void setAttestationForm(AttestationForm attestationForm) {
         this.attestationForm = attestationForm;
     }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setApproved(boolean approved) {
+        this.approved = approved;
+    }
 }

@@ -8,4 +8,6 @@ import java.util.List;
 
 public interface CourseRepository extends GraphRepository<Course> {
     List<Course> findAll();
+
+    Course findById(int id);
 }
