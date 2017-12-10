@@ -2,47 +2,47 @@ package ru.nsu.gulteam.prof_standards.backend.domain.node;
 
 import org.neo4j.ogm.annotation.GraphId;
 import org.neo4j.ogm.annotation.NodeEntity;
+import org.neo4j.ogm.annotation.Property;
 import ru.nsu.gulteam.prof_standards.backend.domain.type.UserRole;
 
-@NodeEntity
+@NodeEntity(label = "USER")
 public class User {
     @GraphId
+    @Property(name = "ID")
     private Long id;
 
     /**
      * Имя
      */
+    @Property(name = "FIRST_NAME")
     private String firstName;
 
     /**
      * Фамилия
      */
+    @Property(name = "SECOND_NAME")
     private String secondName;
 
     /**
      * Логин
      */
+    @Property(name = "LOGIN")
     private String login;
 
     /**
      * Хэш пароля
      */
+    @Property(name = "PASSWORD")
     private String passwordHash;
-
-    /**
-     * Роль
-     */
-    private UserRole role;
 
     public User() {
     }
 
-    public User(String firstName, String secondName, String login, String passwordHash, UserRole role) {
+    public User(String firstName, String secondName, String login, String passwordHash) {
         this.firstName = firstName;
         this.secondName = secondName;
         this.login = login;
         this.passwordHash = passwordHash;
-        this.role = role;
     }
 
     public Long getId() {
@@ -79,13 +79,5 @@ public class User {
 
     public void setPasswordHash(String passwordHash) {
         this.passwordHash = passwordHash;
-    }
-
-    public UserRole getRole() {
-        return role;
-    }
-
-    public void setRole(UserRole role) {
-        this.role = role;
     }
 }
