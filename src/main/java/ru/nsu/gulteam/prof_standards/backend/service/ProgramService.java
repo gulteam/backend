@@ -1,10 +1,14 @@
 package ru.nsu.gulteam.prof_standards.backend.service;
 
 import org.springframework.stereotype.Service;
+import ru.nsu.gulteam.prof_standards.backend.domain.node.BasicEducationProgram;
 import ru.nsu.gulteam.prof_standards.backend.domain.node.Course;
 import ru.nsu.gulteam.prof_standards.backend.domain.repository.BasicEducationProgramRepository;
 import ru.nsu.gulteam.prof_standards.backend.domain.repository.CourseRepository;
 import ru.nsu.gulteam.prof_standards.backend.entity.FullCourseInfo;
+import ru.nsu.gulteam.prof_standards.backend.exception.IncorrectIdentifierException;
+import ru.nsu.gulteam.prof_standards.backend.web.dto.mapping.ProgramMapper;
+import ru.nsu.gulteam.prof_standards.backend.web.dto.response.BasicEducationProgramDto;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -14,26 +18,65 @@ public class ProgramService {
     private BasicEducationProgramRepository programRepository;
     private CourseRepository courseRepository;
     private CourseService courseService;
+    private ProgramMapper programMapper;
 
-    public ProgramService(BasicEducationProgramRepository programRepository, CourseRepository courseRepository, CourseService courseService) {
+    public ProgramService(BasicEducationProgramRepository programRepository, CourseRepository courseRepository, CourseService courseService, ProgramMapper programMapper) {
         this.programRepository = programRepository;
         this.courseRepository = courseRepository;
         this.courseService = courseService;
+        this.programMapper = programMapper;
     }
 
-    public FullCourseInfo addCourseTo(int programId) {
-        Course course = courseRepository.save(new Course());
+    public FullCourseInfo addCourseTo(long programId) {
+        BasicEducationProgram program = programRepository.findOne(programId);
+        if (program == null) {
+            throw new IncorrectIdentifierException("There is no program with id: " + programId);
+        }
 
-        // Todo: connect course to program
+        Course course = courseRepository.save(new Course());
+        courseRepository.connectCourseToProgram(course, program);
 
         return courseService.getFullCourseInfo(course);
     }
 
-    public List<FullCourseInfo> getAllCourses(int programId) {
-        List<Course> courses = courseRepository.findAll();
+    public List<FullCourseInfo> getAllCourses(long programId) {
+        BasicEducationProgram program = programRepository.findOne(programId);
+        if (program == null) {
+            throw new IncorrectIdentifierException("There is no program with id: " + programId);
+        }
 
-        // Todo: get only courses from one program
-
+        List<Course> courses = courseRepository.findAllFromProgram(program);
         return courses.stream().map(courseService::getFullCourseInfo).collect(Collectors.toList());
+    }
+
+    public List<BasicEducationProgram> getAllPrograms() {
+        return programRepository.findAll();
+    }
+
+    public BasicEducationProgram getProgram(long programId) {
+        BasicEducationProgram program = programRepository.findOne(programId);
+        if (program == null) {
+            throw new IncorrectIdentifierException("There is no program with id: " + programId);
+        }
+        return program;
+    }
+
+    public void deleteProgram(long programId) {
+        BasicEducationProgram program = programRepository.findOne(programId);
+        if (program == null) {
+            throw new IncorrectIdentifierException("There is no program with id: " + programId);
+        }
+        programRepository.deleteConnections(program);
+        programRepository.delete(program);
+    }
+
+    public BasicEducationProgram addProgram() {
+        return programRepository.save(new BasicEducationProgram());
+    }
+
+    public BasicEducationProgram updateProgram(int programId, BasicEducationProgramDto programDto) {
+        BasicEducationProgram program = programMapper.fromDto(programDto);
+        BasicEducationProgram savedProgram = programRepository.save(program, programId);
+        return savedProgram;
     }
 }

@@ -4,7 +4,7 @@ import org.neo4j.ogm.annotation.GraphId;
 import org.neo4j.ogm.annotation.NodeEntity;
 import org.neo4j.ogm.annotation.Property;
 
-@NodeEntity(label = "TOKEN")
+@NodeEntity(label = "BASIC_EDUCATION_PROGRAM")
 public class BasicEducationProgram {
     @GraphId
     @Property(name = "ID")
