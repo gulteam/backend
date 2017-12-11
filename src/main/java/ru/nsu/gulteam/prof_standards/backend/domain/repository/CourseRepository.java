@@ -6,6 +6,7 @@ import org.springframework.data.repository.query.Param;
 import ru.nsu.gulteam.prof_standards.backend.domain.node.BasicEducationProgram;
 import ru.nsu.gulteam.prof_standards.backend.domain.node.Course;
 import ru.nsu.gulteam.prof_standards.backend.domain.node.Skills;
+import ru.nsu.gulteam.prof_standards.backend.domain.node.TemplateCourse;
 
 import java.util.List;
 
@@ -17,6 +18,9 @@ public interface CourseRepository extends GraphRepository<Course> {
     @Query("START p=node({program}) MATCH (p)-[:CONTAINS]->(c:COURSE) return c")
     List<Course> findAllFromProgram(@Param("program")BasicEducationProgram program);
 
-    @Query("START p=node({program}), c=node({course}) CREATE (p)-[:CONTAINS]->(c)")
-    void connectCourseToProgram(@Param("course")Course course, @Param("program")BasicEducationProgram program);
+    @Query("START p=node({program}), c=node({course}) CREATE (p)-[:CONTAINS]->(c) return c")
+    Course connectToProgram(@Param("course")Course course, @Param("program")BasicEducationProgram program);
+
+    @Query("START t=node({templateCourse}), c=node({course}) CREATE (c)-[:IMPLEMENTS]->(t) return c")
+    Course connectToTemplate(@Param("course")Course course, @Param("templateCourse")TemplateCourse templateCourse);
 }

@@ -23,6 +23,12 @@ public class TemplateCourse {
     public TemplateCourse() {
     }
 
+    public TemplateCourse(int amount, int semester, AttestationForm attestationForm) {
+        this.amount = amount;
+        this.semester = semester;
+        this.attestationForm = attestationForm;
+    }
+
     public Long getId() {
         return id;
     }

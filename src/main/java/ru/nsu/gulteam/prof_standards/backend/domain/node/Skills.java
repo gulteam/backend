@@ -16,6 +16,10 @@ public class Skills {
     public Skills() {
     }
 
+    public Skills(String description) {
+        this.description = description;
+    }
+
     public Long getId() {
         return id;
     }

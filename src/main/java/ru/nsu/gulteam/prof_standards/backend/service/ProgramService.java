@@ -34,7 +34,7 @@ public class ProgramService {
         }
 
         Course course = courseRepository.save(new Course());
-        courseRepository.connectCourseToProgram(course, program);
+        courseRepository.connectToProgram(course, program);
 
         return courseService.getFullCourseInfo(course);
     }

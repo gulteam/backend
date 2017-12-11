@@ -29,6 +29,13 @@ public class Course {
     public Course() {
     }
 
+    public Course(int amount, int semester, AttestationForm attestationForm, String name) {
+        this.amount = amount;
+        this.semester = semester;
+        this.attestationForm = attestationForm;
+        this.name = name;
+    }
+
     public String getName() {
         return name;
     }

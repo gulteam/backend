@@ -13,6 +13,10 @@ public class Knowledge {
     @Property(name = "DESCRIPTION")
     private String description;
 
+    public Knowledge(String description) {
+        this.description = description;
+    }
+
     public Knowledge() {
     }
 
