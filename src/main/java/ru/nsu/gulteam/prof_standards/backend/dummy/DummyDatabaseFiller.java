@@ -2,6 +2,7 @@ package ru.nsu.gulteam.prof_standards.backend.dummy;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import ru.nsu.gulteam.prof_standards.backend.domain.node.*;
 import ru.nsu.gulteam.prof_standards.backend.domain.repository.*;
 import ru.nsu.gulteam.prof_standards.backend.domain.type.AttestationForm;
@@ -24,8 +25,8 @@ public class DummyDatabaseFiller {
     private GeneralizedLaborFunctionRepository generalizedLaborFunctionRepository;
     private CourseRepository courseRepository;
     private BasicEducationProgramRepository basicEducationProgramRepository;
-    private TrajectoryService trajectoryService;
     private DummyDatabaseFillerProperties dummyDatabaseFillerProperties;
+    private PasswordEncoder passwordEncoder;
 
     @Autowired
     public DummyDatabaseFiller(DummyDatabaseFillerProperties dummyDatabaseFillerProperties,
@@ -39,7 +40,7 @@ public class DummyDatabaseFiller {
                                CourseRepository courseRepository,
                                BasicEducationProgramRepository basicEducationProgramRepository,
                                MainRepository mainRepository,
-                               TrajectoryService trajectoryService) {
+                               PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.templateCourseRepository = templateCourseRepository;
         this.skillsRepository = skillsRepository;
@@ -50,7 +51,7 @@ public class DummyDatabaseFiller {
         this.courseRepository = courseRepository;
         this.basicEducationProgramRepository = basicEducationProgramRepository;
         this.mainRepository = mainRepository;
-        this.trajectoryService = trajectoryService;
+        this.passwordEncoder = passwordEncoder;
         this.dummyDatabaseFillerProperties = dummyDatabaseFillerProperties;
     }
 
@@ -65,10 +66,10 @@ public class DummyDatabaseFiller {
 
         // Users
         List<User> users = Arrays.asList(
-                new User("Kristina", "Popova", "kr111kr", "kr111kr"),
-                new User("Kirill", "Batalin", "kir55rus", "kir55rus"),
-                new User("Igor", "Ryzhakov", "gorod", "gorod"),
-                new User("Nikita", "Mameyev", "asm_edf", "asm_edf")
+                new User("Kristina", "Popova", "kr111kr", passwordEncoder.encode("kr111kr")),
+                new User("Kirill", "Batalin", "kir55rus", passwordEncoder.encode("kir55rus")),
+                new User("Igor", "Ryzhakov", "gorod", passwordEncoder.encode("gorod")),
+                new User("Nikita", "Mameyev", "asm_edf", passwordEncoder.encode("asm_edf"))
         );
 
         userRepository.save(users);
