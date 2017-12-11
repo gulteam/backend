@@ -5,7 +5,7 @@ import org.neo4j.ogm.annotation.NodeEntity;
 import org.neo4j.ogm.annotation.Property;
 
 @NodeEntity(label = "SKILLS")
-public class Skills {
+public class Skills implements Comparable<Skills> {
     @GraphId
     @Property(name = "ID")
     private Long id;
@@ -34,5 +34,10 @@ public class Skills {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    @Override
+    public int compareTo(Skills o) {
+        return (int)(id - o.id);
     }
 }

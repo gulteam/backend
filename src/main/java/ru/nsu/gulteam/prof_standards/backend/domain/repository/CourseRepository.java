@@ -23,4 +23,10 @@ public interface CourseRepository extends GraphRepository<Course> {
 
     @Query("START t=node({templateCourse}), c=node({course}) CREATE (c)-[:IMPLEMENTS]->(t) return c")
     Course connectToTemplate(@Param("course")Course course, @Param("templateCourse")TemplateCourse templateCourse);
+
+    @Query("START p=node({program}) MATCH (p)-[:CONTAINS]->(c:COURSE) WHERE NOT (p)-[:IMPLEMENTS]->() return c")
+    List<Course> findAllBaseFromProgram(@Param("program")BasicEducationProgram program);
+
+    @Query("START t=node({templateCourse}) MATCH (c:COURSE)-[:IMPLEMENTS]->(t) return c")
+    List<Course> getImplementationsOf(@Param("templateCourse")TemplateCourse templateCourse);
 }

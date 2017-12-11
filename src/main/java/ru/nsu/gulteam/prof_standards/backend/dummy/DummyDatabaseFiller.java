@@ -1,10 +1,12 @@
-package ru.nsu.gulteam.prof_standards.backend.domain;
+package ru.nsu.gulteam.prof_standards.backend.dummy;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import ru.nsu.gulteam.prof_standards.backend.domain.node.*;
 import ru.nsu.gulteam.prof_standards.backend.domain.repository.*;
 import ru.nsu.gulteam.prof_standards.backend.domain.type.AttestationForm;
+import ru.nsu.gulteam.prof_standards.backend.entity.Trajectory;
+import ru.nsu.gulteam.prof_standards.backend.service.TrajectoryService;
 
 import javax.annotation.PostConstruct;
 import java.util.Arrays;
@@ -22,9 +24,12 @@ public class DummyDatabaseFiller {
     private GeneralizedLaborFunctionRepository generalizedLaborFunctionRepository;
     private CourseRepository courseRepository;
     private BasicEducationProgramRepository basicEducationProgramRepository;
+    private TrajectoryService trajectoryService;
+    private DummyDatabaseFillerProperties dummyDatabaseFillerProperties;
 
     @Autowired
-    public DummyDatabaseFiller(UserRepository userRepository,
+    public DummyDatabaseFiller(DummyDatabaseFillerProperties dummyDatabaseFillerProperties,
+                               UserRepository userRepository,
                                TemplateCourseRepository templateCourseRepository,
                                SkillsRepository skillsRepository,
                                ProfessionalStandardRepository professionalStandardRepository,
@@ -33,7 +38,8 @@ public class DummyDatabaseFiller {
                                GeneralizedLaborFunctionRepository generalizedLaborFunctionRepository,
                                CourseRepository courseRepository,
                                BasicEducationProgramRepository basicEducationProgramRepository,
-                               MainRepository mainRepository) {
+                               MainRepository mainRepository,
+                               TrajectoryService trajectoryService) {
         this.userRepository = userRepository;
         this.templateCourseRepository = templateCourseRepository;
         this.skillsRepository = skillsRepository;
@@ -44,16 +50,18 @@ public class DummyDatabaseFiller {
         this.courseRepository = courseRepository;
         this.basicEducationProgramRepository = basicEducationProgramRepository;
         this.mainRepository = mainRepository;
+        this.trajectoryService = trajectoryService;
+        this.dummyDatabaseFillerProperties = dummyDatabaseFillerProperties;
     }
 
     @PostConstruct
     public void fillDatabase() {
-        System.out.println("Clearing database");
+        if(!dummyDatabaseFillerProperties.needFill()){
+            return;
+        }
 
         mainRepository.clearAllRelations();
         mainRepository.clearAll();
-
-        System.out.println("Filling database with dummy data");
 
         // Users
         List<User> users = Arrays.asList(
@@ -200,5 +208,14 @@ public class DummyDatabaseFiller {
         SM1 = skillsRepository.connectToCourse(SM1, turboLearning);
         SW2 = skillsRepository.connectToCourse(SW2, turboLearning);
         KW2 = knowledgeRepository.connectToCourse(KW2, turboLearning);
+
+        // Trajectories?
+        List<Trajectory> trajectories = trajectoryService.generateAllTrajectories(educationProgram);
+
+        for(Trajectory trajectory : trajectories){
+            List<ProfessionalStandard> professionalStandards = trajectoryService.getProfessionalStandardsReachedBy(trajectory);
+        }
+
+        // Profit
     }
 }

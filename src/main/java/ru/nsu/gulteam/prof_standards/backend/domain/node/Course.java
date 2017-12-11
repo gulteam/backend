@@ -83,4 +83,11 @@ public class Course {
     public void setApproved(boolean approved) {
         this.approved = approved;
     }
+
+    @Override
+    public String toString() {
+        return "Course{" +
+                "name='" + name + '\'' +
+                '}';
+    }
 }
