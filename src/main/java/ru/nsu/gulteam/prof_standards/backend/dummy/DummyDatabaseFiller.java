@@ -165,23 +165,28 @@ public class DummyDatabaseFiller {
         Course writeWebApplication = courseRepository.save(new Course(36, 2, AttestationForm.EXAM, "Write web application"));
         Course createKeyboard = courseRepository.save(new Course(36, 2, AttestationForm.EXAM, "Create keyboard"));
         createServer = courseRepository.connectToTemplate(createServer, t2);
+        createServer = courseRepository.connectToProgram(createServer, educationProgram);
         writeWebApplication = courseRepository.connectToTemplate(writeWebApplication, t2);
+        writeWebApplication = courseRepository.connectToProgram(writeWebApplication, educationProgram);
         createKeyboard = courseRepository.connectToTemplate(createKeyboard, t2);
+        createKeyboard = courseRepository.connectToProgram(createKeyboard, educationProgram);
 
         Course databaseCreating = courseRepository.save(new Course(36, 2, AttestationForm.EXAM, "Database creating"));
         Course turboLearning = courseRepository.save(new Course(36, 2, AttestationForm.EXAM, "Turbo learning system"));
         databaseCreating = courseRepository.connectToTemplate(databaseCreating, t3);
+        databaseCreating = courseRepository.connectToProgram(databaseCreating, educationProgram);
         turboLearning = courseRepository.connectToTemplate(turboLearning, t3);
+        turboLearning = courseRepository.connectToProgram(turboLearning, educationProgram);
 
         // Things, what courses develops
         // Programming
-        S1 = skillsRepository.connectToCourse(S1, programming);
-        S2 = skillsRepository.connectToCourse(S2, programming);
-        KC1 = knowledgeRepository.connectToCourse(KC1, programming);
+        skillsRepository.connectToCourse(S1, programming);
+        skillsRepository.connectToCourse(S2, programming);
+        knowledgeRepository.connectToCourse(KC1, programming);
 
         // Physics
-        KM1 = knowledgeRepository.connectToCourse(KM1, physics);
-        KM2 = knowledgeRepository.connectToCourse(KM2, physics);
+        knowledgeRepository.connectToCourse(KM1, physics);
+        knowledgeRepository.connectToCourse(KM2, physics);
 
         // Create server
         SM2 = skillsRepository.connectToCourse(SM2, createServer);
@@ -193,29 +198,20 @@ public class DummyDatabaseFiller {
         // Write web application
         SW1 = skillsRepository.connectToCourse(SW1, writeWebApplication);
         SW2 = skillsRepository.connectToCourse(SW2, writeWebApplication);
-        KW1 = knowledgeRepository.connectToCourse(KW1, writeWebApplication);
+        knowledgeRepository.connectToCourse(KW1, writeWebApplication);
         KW2 = knowledgeRepository.connectToCourse(KW2, writeWebApplication);
-        KW3 = knowledgeRepository.connectToCourse(KW3, writeWebApplication);
+        knowledgeRepository.connectToCourse(KW3, writeWebApplication);
 
         // Create keyboard
-        SM2 = skillsRepository.connectToCourse(SM2, createKeyboard);
-        SC1 = skillsRepository.connectToCourse(SC1, createKeyboard);
+        skillsRepository.connectToCourse(SM2, createKeyboard);
+        skillsRepository.connectToCourse(SC1, createKeyboard);
 
         // Database
-        SW1 = skillsRepository.connectToCourse(SW1, databaseCreating);
+        skillsRepository.connectToCourse(SW1, databaseCreating);
 
         // Turbo learning
-        SM1 = skillsRepository.connectToCourse(SM1, turboLearning);
-        SW2 = skillsRepository.connectToCourse(SW2, turboLearning);
-        KW2 = knowledgeRepository.connectToCourse(KW2, turboLearning);
-
-        // Trajectories?
-        List<Trajectory> trajectories = trajectoryService.generateAllTrajectories(educationProgram);
-
-        for(Trajectory trajectory : trajectories){
-            List<ProfessionalStandard> professionalStandards = trajectoryService.getProfessionalStandardsReachedBy(trajectory);
-        }
-
-        // Profit
+        skillsRepository.connectToCourse(SM1, turboLearning);
+        skillsRepository.connectToCourse(SW2, turboLearning);
+        knowledgeRepository.connectToCourse(KW2, turboLearning);
     }
 }
