@@ -15,4 +15,7 @@ public interface TemplateCourseRepository extends GraphRepository<TemplateCourse
 
     @Query("START p=node({program}) MATCH (p)-[:CONTAINS]->(t:TEMPLATE_COURSE) return t")
     List<TemplateCourse> findAllFromProgram(@Param("program")BasicEducationProgram program);
+
+    @Query("START c=node({course}) MATCH (c)-[:IMPLEMENTS]->(t:TEMPLATE_COURSE) return t")
+    TemplateCourse findTemplateOf(@Param("course")Course course);
 }

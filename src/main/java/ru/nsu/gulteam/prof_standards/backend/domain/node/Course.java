@@ -6,7 +6,7 @@ import org.neo4j.ogm.annotation.Property;
 import ru.nsu.gulteam.prof_standards.backend.domain.type.AttestationForm;
 
 @NodeEntity(label = "COURSE")
-public class Course {
+public class Course implements Comparable<Course> {
     @GraphId
     @Property(name = "ID")
     private Long id;
@@ -89,5 +89,15 @@ public class Course {
         return "Course{" +
                 "name='" + name + '\'' +
                 '}';
+    }
+
+    @Override
+    public int compareTo(Course o) {
+        return (int)(id - o.id);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return (obj instanceof Course && ((Course) obj).getId().equals(getId()));
     }
 }

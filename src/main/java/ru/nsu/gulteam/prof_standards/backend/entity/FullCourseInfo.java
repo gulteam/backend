@@ -9,22 +9,15 @@ public class FullCourseInfo {
     private List<Integer> previousCourses;
     private List<Integer> nextCourses;
 
-    private boolean isImplements;
-    private int templateCourse;
+    private boolean implementsTemplate;
+    private long templateCourse;
 
     private List<Integer> developCompetence;
-    private List<Integer> developSkills;
-    private List<Integer> developKnowledge;
+    private List<Long> developSkills;
+    private List<Long> developKnowledge;
 
-    public FullCourseInfo(Course course, List<Integer> previousCourses, List<Integer> nextCourses, boolean isImplements, int templateCourse, List<Integer> developCompetence, List<Integer> developSkills, List<Integer> developKnowledge) {
+    public FullCourseInfo(Course course) {
         this.course = course;
-        this.previousCourses = previousCourses;
-        this.nextCourses = nextCourses;
-        this.isImplements = isImplements;
-        this.templateCourse = templateCourse;
-        this.developCompetence = developCompetence;
-        this.developSkills = developSkills;
-        this.developKnowledge = developKnowledge;
     }
 
     public Course getCourse() {
@@ -51,19 +44,19 @@ public class FullCourseInfo {
         this.nextCourses = nextCourses;
     }
 
-    public boolean isImplements() {
-        return isImplements;
+    public boolean isImplementsTemplate() {
+        return implementsTemplate;
     }
 
-    public void setImplements(boolean anImplements) {
-        isImplements = anImplements;
+    public void setImplementsTemplate(boolean implementsTemplate) {
+        this.implementsTemplate = implementsTemplate;
     }
 
-    public int getTemplateCourse() {
+    public long getTemplateCourse() {
         return templateCourse;
     }
 
-    public void setTemplateCourse(int templateCourse) {
+    public void setTemplateCourse(long templateCourse) {
         this.templateCourse = templateCourse;
     }
 
@@ -75,19 +68,19 @@ public class FullCourseInfo {
         this.developCompetence = developCompetence;
     }
 
-    public List<Integer> getDevelopSkills() {
+    public List<Long> getDevelopSkills() {
         return developSkills;
     }
 
-    public void setDevelopSkills(List<Integer> developSkills) {
+    public void setDevelopSkills(List<Long> developSkills) {
         this.developSkills = developSkills;
     }
 
-    public List<Integer> getDevelopKnowledge() {
+    public List<Long> getDevelopKnowledge() {
         return developKnowledge;
     }
 
-    public void setDevelopKnowledge(List<Integer> developKnowledge) {
+    public void setDevelopKnowledge(List<Long> developKnowledge) {
         this.developKnowledge = developKnowledge;
     }
 }

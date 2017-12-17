@@ -3,12 +3,11 @@ package ru.nsu.gulteam.prof_standards.backend.service;
 import org.springframework.stereotype.Service;
 import ru.nsu.gulteam.prof_standards.backend.domain.node.*;
 import ru.nsu.gulteam.prof_standards.backend.domain.repository.*;
+import ru.nsu.gulteam.prof_standards.backend.entity.FullCourseInfo;
 import ru.nsu.gulteam.prof_standards.backend.entity.Trajectory;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class TrajectoryService {
@@ -17,13 +16,15 @@ public class TrajectoryService {
     private ProfessionalStandardRepository professionalStandardRepository;
     private SkillsRepository skillsRepository;
     private KnowledgeRepository knowledgeRepository;
+    private CourseService courseService;
 
-    public TrajectoryService(CourseRepository courseRepository, TemplateCourseRepository templateCourseRepository, ProfessionalStandardRepository professionalStandardRepository, SkillsRepository skillsRepository, KnowledgeRepository knowledgeRepository) {
+    public TrajectoryService(CourseRepository courseRepository, TemplateCourseRepository templateCourseRepository, ProfessionalStandardRepository professionalStandardRepository, SkillsRepository skillsRepository, KnowledgeRepository knowledgeRepository, CourseService courseService) {
         this.courseRepository = courseRepository;
         this.templateCourseRepository = templateCourseRepository;
         this.professionalStandardRepository = professionalStandardRepository;
         this.skillsRepository = skillsRepository;
         this.knowledgeRepository = knowledgeRepository;
+        this.courseService = courseService;
     }
 
     public List<Trajectory> generateAllTrajectories(BasicEducationProgram program){
@@ -31,7 +32,6 @@ public class TrajectoryService {
 
         List<Course> baseCourses = courseRepository.findAllBaseFromProgram(program);
         List<TemplateCourse> templates = templateCourseRepository.findAllFromProgram(program);
-
         recursiveTrajectoryBuilding(result, baseCourses, new ArrayList<>(), templates, 0);
 
         return result;
@@ -41,7 +41,23 @@ public class TrajectoryService {
         if(depth == templates.size()){
             List<Course> courses = new ArrayList<>(baseCourses);
             courses.addAll(variableCourses);
-            result.add(new Trajectory(courses));
+
+            courses.sort((c1, c2)->{
+                if(c1.getSemester() != c2.getSemester()){
+                    return c1.getSemester() - c2.getSemester();
+                }
+                else if(baseCourses.contains(c1) && !baseCourses.contains(c2)){
+                    return -1;
+                }
+                else if(!baseCourses.contains(c1) && baseCourses.contains(c2)){
+                    return 1;
+                }
+                else{
+                    return (int)(c1.getId() - c2.getId());
+                }
+            });
+
+            result.add(new Trajectory(courses.stream().map(courseService::getFullCourseInfo).collect(Collectors.toList())));
             return;
         }
 
@@ -64,7 +80,8 @@ public class TrajectoryService {
 
             Set<Skills> developsSkills = new TreeSet<>();
             Set<Knowledge> developsKnowledge = new TreeSet<>();
-            for(Course course : trajectory.getCourses()){
+            for(FullCourseInfo fullCourseInfo : trajectory.getCourses()){
+                Course course = fullCourseInfo.getCourse();
                 developsSkills.addAll(skillsRepository.getDevelopsByCourse(course));
                 developsKnowledge.addAll(knowledgeRepository.getDevelopsByCourse(course));
             }
