@@ -6,8 +6,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import ru.nsu.gulteam.prof_standards.backend.domain.node.*;
 import ru.nsu.gulteam.prof_standards.backend.domain.repository.*;
 import ru.nsu.gulteam.prof_standards.backend.domain.type.AttestationForm;
+import ru.nsu.gulteam.prof_standards.backend.domain.type.UserRole;
 import ru.nsu.gulteam.prof_standards.backend.entity.Trajectory;
 import ru.nsu.gulteam.prof_standards.backend.service.TrajectoryService;
+import ru.nsu.gulteam.prof_standards.backend.service.UserService;
 
 import javax.annotation.PostConstruct;
 import java.util.Arrays;
@@ -16,7 +18,7 @@ import java.util.List;
 @Configuration
 public class DummyDatabaseFiller {
     private MainRepository mainRepository;
-    private UserRepository userRepository;
+    private UserService userService;
     private TemplateCourseRepository templateCourseRepository;
     private SkillsRepository skillsRepository;
     private ProfessionalStandardRepository professionalStandardRepository;
@@ -27,21 +29,13 @@ public class DummyDatabaseFiller {
     private BasicEducationProgramRepository basicEducationProgramRepository;
     private DummyDatabaseFillerProperties dummyDatabaseFillerProperties;
     private PasswordEncoder passwordEncoder;
+    private FacultyRepository facultyRepository;
+    private DepartmentRepository departmentRepository;
 
     @Autowired
-    public DummyDatabaseFiller(DummyDatabaseFillerProperties dummyDatabaseFillerProperties,
-                               UserRepository userRepository,
-                               TemplateCourseRepository templateCourseRepository,
-                               SkillsRepository skillsRepository,
-                               ProfessionalStandardRepository professionalStandardRepository,
-                               LaborFunctionRepository laborFunctionRepository,
-                               KnowledgeRepository knowledgeRepository,
-                               GeneralizedLaborFunctionRepository generalizedLaborFunctionRepository,
-                               CourseRepository courseRepository,
-                               BasicEducationProgramRepository basicEducationProgramRepository,
-                               MainRepository mainRepository,
-                               PasswordEncoder passwordEncoder) {
-        this.userRepository = userRepository;
+    public DummyDatabaseFiller(MainRepository mainRepository, UserService userService, TemplateCourseRepository templateCourseRepository, SkillsRepository skillsRepository, ProfessionalStandardRepository professionalStandardRepository, LaborFunctionRepository laborFunctionRepository, KnowledgeRepository knowledgeRepository, GeneralizedLaborFunctionRepository generalizedLaborFunctionRepository, CourseRepository courseRepository, BasicEducationProgramRepository basicEducationProgramRepository, DummyDatabaseFillerProperties dummyDatabaseFillerProperties, PasswordEncoder passwordEncoder, FacultyRepository facultyRepository, DepartmentRepository departmentRepository) {
+        this.mainRepository = mainRepository;
+        this.userService = userService;
         this.templateCourseRepository = templateCourseRepository;
         this.skillsRepository = skillsRepository;
         this.professionalStandardRepository = professionalStandardRepository;
@@ -50,9 +44,10 @@ public class DummyDatabaseFiller {
         this.generalizedLaborFunctionRepository = generalizedLaborFunctionRepository;
         this.courseRepository = courseRepository;
         this.basicEducationProgramRepository = basicEducationProgramRepository;
-        this.mainRepository = mainRepository;
-        this.passwordEncoder = passwordEncoder;
         this.dummyDatabaseFillerProperties = dummyDatabaseFillerProperties;
+        this.passwordEncoder = passwordEncoder;
+        this.facultyRepository = facultyRepository;
+        this.departmentRepository = departmentRepository;
     }
 
     @PostConstruct
@@ -64,15 +59,57 @@ public class DummyDatabaseFiller {
         mainRepository.clearAllRelations();
         mainRepository.clearAll();
 
+        userService.initialize();
+
+
+        // Faculties
+        Faculty FIT = facultyRepository.save(new Faculty("ФИТ"));
+
+        // Department
+        Department KOI = departmentRepository.save(new Department("Общей информатики"));
+        Department PV = departmentRepository.save(new Department("Параллельных вычислений"));
+
+        departmentRepository.connectToFaculty(KOI, FIT);
+        departmentRepository.connectToFaculty(PV, FIT);
+
         // Users
         List<User> users = Arrays.asList(
-                new User("Kristina", "Popova", "kr111kr", passwordEncoder.encode("kr111kr")),
-                new User("Kirill", "Batalin", "kir55rus", passwordEncoder.encode("kir55rus")),
-                new User("Igor", "Ryzhakov", "gorod", passwordEncoder.encode("gorod")),
-                new User("Nikita", "Mameyev", "asm_edf", passwordEncoder.encode("asm_edf"))
+                new User("Кристина", "Попова", "kr111kr", passwordEncoder.encode("kr111kr")),
+                new User("Кирилл", "Баталин", "kir55rus", passwordEncoder.encode("kir55rus")),
+                new User("Игорь", "Рыжаков", "gorod", passwordEncoder.encode("gorod")),
+                new User("Никита", "Мамеев", "asm_edf", passwordEncoder.encode("asm_edf"))
         );
 
-        userRepository.save(users);
+        users.forEach(userService::addNew);
+
+        // Lecturers
+        User parallel = userService.addNew(new User("Андрей", "Параллельный", "parallel", passwordEncoder.encode("parallel")));
+        User common = userService.addNew(new User("Дмитрий", "Общий", "common", passwordEncoder.encode("common")));
+
+        departmentRepository.connectToUser(KOI, common);
+        facultyRepository.connectToUser(FIT, common);
+        userService.setRole(common, UserRole.LECTURER);
+
+        departmentRepository.connectToUser(PV, parallel);
+        facultyRepository.connectToUser(FIT, parallel);
+        userService.setRole(parallel, UserRole.LECTURER);
+
+        // Department member
+        User parallelDepartment = userService.addNew(new User("Евгения", "Параллельная", "parallelDepartment", passwordEncoder.encode("parallelDepartment")));
+        User commonDepartment = userService.addNew(new User("Анастасия", "Общая", "commonDepartment", passwordEncoder.encode("commonDepartment")));
+
+        departmentRepository.connectToUser(KOI, commonDepartment);
+        facultyRepository.connectToUser(FIT, commonDepartment);
+        userService.setRole(common, UserRole.DEPARTMENT_MEMBER);
+
+        departmentRepository.connectToUser(PV, parallelDepartment);
+        facultyRepository.connectToUser(FIT, parallelDepartment);
+        userService.setRole(parallel, UserRole.DEPARTMENT_MEMBER);
+
+        // Dean member
+        User fitDean = userService.addNew(new User("Александр", "Информационный", "fit", passwordEncoder.encode("fit")));
+        facultyRepository.connectToUser(FIT, fitDean);
+        userService.setRole(fitDean, UserRole.DEAN_MEMBER);
 
         // Professional standard
         ProfessionalStandard webDeveloper = professionalStandardRepository.save(new ProfessionalStandard("Web-developer", "A"));

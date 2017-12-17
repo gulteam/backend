@@ -11,6 +11,7 @@ import ru.nsu.gulteam.prof_standards.backend.domain.node.Token;
 import ru.nsu.gulteam.prof_standards.backend.domain.node.User;
 import ru.nsu.gulteam.prof_standards.backend.domain.repository.TokenRepository;
 import ru.nsu.gulteam.prof_standards.backend.domain.repository.UserRepository;
+import ru.nsu.gulteam.prof_standards.backend.entity.FullUserInfo;
 import ru.nsu.gulteam.prof_standards.backend.exception.IncorrectTokenException;
 import ru.nsu.gulteam.prof_standards.backend.exception.NotAuthorizedException;
 import ru.nsu.gulteam.prof_standards.backend.exception.RegisterException;
@@ -24,13 +25,15 @@ public class SecurityService {
     private final PasswordEncoder passwordEncoder;
     private final TokenRepository tokenRepository;
     private final UserMapper userMapper;
+    private final UserService userService;
 
     @Autowired
-    public SecurityService(UserRepository userRepository, PasswordEncoder passwordEncoder, TokenRepository tokenRepository, UserMapper userMapper) {
+    public SecurityService(UserRepository userRepository, PasswordEncoder passwordEncoder, TokenRepository tokenRepository, UserMapper userMapper, UserService userService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.tokenRepository = tokenRepository;
         this.userMapper = userMapper;
+        this.userService = userService;
     }
 
     public org.springframework.security.core.userdetails.User getUserDetails() {
@@ -73,8 +76,6 @@ public class SecurityService {
             throw new RegisterException("This login is already used");
         }
 
-        User user = userMapper.toUser(registerData);
-        user = userRepository.save(user);
-        return user;
+        return userService.addNew(userMapper.toUser(registerData));
     }
 }
