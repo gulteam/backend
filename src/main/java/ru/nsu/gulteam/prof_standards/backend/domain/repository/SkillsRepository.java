@@ -6,9 +6,12 @@ import org.springframework.data.repository.query.Param;
 import ru.nsu.gulteam.prof_standards.backend.domain.node.*;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 public interface SkillsRepository extends GraphRepository<Skills> {
+    List<Skills> findAll();
+
     @Query("START l=node({laborFunction}), s=node({skills}) CREATE (l)-[:REQUIRE]->(s) return s")
     Skills connectToLaborFunction(@Param("skills")Skills skills, @Param("laborFunction")LaborFunction laborFunction);
 
