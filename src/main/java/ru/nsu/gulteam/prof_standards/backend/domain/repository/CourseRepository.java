@@ -13,7 +13,7 @@ import java.util.List;
 public interface CourseRepository extends GraphRepository<Course> {
     List<Course> findAll();
 
-    Course findById(int id);
+    Course findById(long id);
 
     @Query("START p=node({program}) MATCH (p)-[:CONTAINS]->(c:COURSE) return c")
     List<Course> findAllFromProgram(@Param("program")BasicEducationProgram program);
@@ -32,4 +32,16 @@ public interface CourseRepository extends GraphRepository<Course> {
 
     @Query("START c=node({course}) MATCH (c)-[d:DEVELOPS]->() delete d")
     void deleteAllDevelopRelations(@Param("course")Course course);
+
+    @Query("START c=node({course}) MATCH (c)-[:BASED_ON]->(b:COURSE) RETURN b")
+    List<Course> getPreviousCourses(@Param("course")Course course);
+
+    @Query("START c=node({course}) MATCH (c)<-[d:BASED_ON]-(b:COURSE) RETURN b")
+    List<Course> getNextCourses(@Param("course")Course course);
+
+    @Query("START c=node({course}), b=node({base}) CREATE (c)-[:BASED_ON]->(b)")
+    void setBasedOn(@Param("course")Course course, @Param("base")Course base);
+
+    @Query("START c=node({course}) MATCH (c)-[b:BASED_ON]->(:COURSE) delete b")
+    void removeAllBased(@Param("course")Course course);
 }

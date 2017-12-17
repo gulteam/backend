@@ -6,8 +6,8 @@ import java.util.List;
 
 public class FullCourseInfo {
     private Course course;
-    private List<Integer> previousCourses;
-    private List<Integer> nextCourses;
+    private List<Long> previousCourses;
+    private List<Long> nextCourses;
 
     private boolean implementsTemplate;
     private long templateCourse;
@@ -15,6 +15,15 @@ public class FullCourseInfo {
     private List<Integer> developCompetence;
     private List<Long> developSkills;
     private List<Long> developKnowledge;
+    private long programId;
+
+    public long getProgramId() {
+        return programId;
+    }
+
+    public void setProgramId(long programId) {
+        this.programId = programId;
+    }
 
     public FullCourseInfo(Course course) {
         this.course = course;
@@ -28,19 +37,19 @@ public class FullCourseInfo {
         this.course = course;
     }
 
-    public List<Integer> getPreviousCourses() {
+    public List<Long> getPreviousCourses() {
         return previousCourses;
     }
 
-    public void setPreviousCourses(List<Integer> previousCourses) {
+    public void setPreviousCourses(List<Long> previousCourses) {
         this.previousCourses = previousCourses;
     }
 
-    public List<Integer> getNextCourses() {
+    public List<Long> getNextCourses() {
         return nextCourses;
     }
 
-    public void setNextCourses(List<Integer> nextCourses) {
+    public void setNextCourses(List<Long> nextCourses) {
         this.nextCourses = nextCourses;
     }
 
