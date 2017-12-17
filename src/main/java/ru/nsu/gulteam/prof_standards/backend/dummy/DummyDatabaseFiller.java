@@ -152,8 +152,10 @@ public class DummyDatabaseFiller {
         // Courses
         Course programming = courseRepository.save(new Course(36, 1, AttestationForm.EXAM, "Programming C#"));
         Course physics = courseRepository.save(new Course(36, 1, AttestationForm.EXAM, "Thermodynamics"));
+        Course english = courseRepository.save(new Course(36, 3, AttestationForm.EXAM, "English language"));
         programming = courseRepository.connectToProgram(programming, educationProgram);
         physics = courseRepository.connectToProgram(physics, educationProgram);
+        english = courseRepository.connectToProgram(english, educationProgram);
 
         // Template courses
         TemplateCourse t2 = templateCourseRepository.save(new TemplateCourse(36, 2, AttestationForm.EXAM));
@@ -172,8 +174,8 @@ public class DummyDatabaseFiller {
         createKeyboard = courseRepository.connectToTemplate(createKeyboard, t2);
         createKeyboard = courseRepository.connectToProgram(createKeyboard, educationProgram);
 
-        Course databaseCreating = courseRepository.save(new Course(36, 2, AttestationForm.EXAM, "Database creating"));
-        Course turboLearning = courseRepository.save(new Course(36, 2, AttestationForm.EXAM, "Turbo learning system"));
+        Course databaseCreating = courseRepository.save(new Course(36, 3, AttestationForm.EXAM, "Database creating"));
+        Course turboLearning = courseRepository.save(new Course(36, 3, AttestationForm.EXAM, "Turbo learning system"));
         databaseCreating = courseRepository.connectToTemplate(databaseCreating, t3);
         databaseCreating = courseRepository.connectToProgram(databaseCreating, educationProgram);
         turboLearning = courseRepository.connectToTemplate(turboLearning, t3);

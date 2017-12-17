@@ -12,7 +12,7 @@ public class CourseDto {
     private String name;
     private List<Integer> previousCourses;
     private List<Integer> nextCourses;
-    private boolean isImplements;
+    private boolean implementsTemplate;
     private int templateCourse;
     private List<Integer> developCompetence;
     private List<Integer> developSkills;
@@ -20,7 +20,7 @@ public class CourseDto {
 
     public CourseDto(){}
 
-    public CourseDto(long id, int amount, int semester, AttestationForm attestationForm, String name, List<Integer> previousCourses, List<Integer> nextCourses, boolean isImplements, int templateCourse, List<Integer> developCompetence, List<Integer> developSkills, List<Integer> developKnowledge) {
+    public CourseDto(long id, int amount, int semester, AttestationForm attestationForm, String name, List<Integer> previousCourses, List<Integer> nextCourses, boolean implementsTemplate, int templateCourse, List<Integer> developCompetence, List<Integer> developSkills, List<Integer> developKnowledge) {
         this.id = id;
         this.amount = amount;
         this.semester = semester;
@@ -28,7 +28,7 @@ public class CourseDto {
         this.name = name;
         this.previousCourses = previousCourses;
         this.nextCourses = nextCourses;
-        this.isImplements = isImplements;
+        this.implementsTemplate = implementsTemplate;
         this.templateCourse = templateCourse;
         this.developCompetence = developCompetence;
         this.developSkills = developSkills;
@@ -91,12 +91,12 @@ public class CourseDto {
         this.nextCourses = nextCourses;
     }
 
-    public boolean isImplements() {
-        return isImplements;
+    public boolean isImplementsTemplate() {
+        return implementsTemplate;
     }
 
-    public void setImplements(boolean anImplements) {
-        isImplements = anImplements;
+    public void setImplementsTemplate(boolean implementsTemplate) {
+        this.implementsTemplate = implementsTemplate;
     }
 
     public int getTemplateCourse() {
