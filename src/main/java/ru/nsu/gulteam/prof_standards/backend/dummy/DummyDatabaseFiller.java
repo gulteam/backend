@@ -100,11 +100,11 @@ public class DummyDatabaseFiller {
 
         departmentRepository.connectToUser(KOI, commonDepartment);
         facultyRepository.connectToUser(FIT, commonDepartment);
-        userService.setRole(common, UserRole.DEPARTMENT_MEMBER);
+        userService.setRole(commonDepartment, UserRole.DEPARTMENT_MEMBER);
 
         departmentRepository.connectToUser(PV, parallelDepartment);
         facultyRepository.connectToUser(FIT, parallelDepartment);
-        userService.setRole(parallel, UserRole.DEPARTMENT_MEMBER);
+        userService.setRole(parallelDepartment, UserRole.DEPARTMENT_MEMBER);
 
         // Dean member
         User fitDean = userService.addNew(new User("Александр", "Информационный", "fit", passwordEncoder.encode("fit")));

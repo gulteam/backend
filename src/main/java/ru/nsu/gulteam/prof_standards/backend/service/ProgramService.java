@@ -1,5 +1,6 @@
 package ru.nsu.gulteam.prof_standards.backend.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.nsu.gulteam.prof_standards.backend.domain.node.BasicEducationProgram;
 import ru.nsu.gulteam.prof_standards.backend.domain.node.Course;
@@ -20,6 +21,7 @@ public class ProgramService {
     private CourseService courseService;
     private ProgramMapper programMapper;
 
+    @Autowired
     public ProgramService(BasicEducationProgramRepository programRepository, CourseRepository courseRepository, CourseService courseService, ProgramMapper programMapper) {
         this.programRepository = programRepository;
         this.courseRepository = courseRepository;
@@ -29,6 +31,7 @@ public class ProgramService {
 
     public FullCourseInfo addCourseTo(long programId) {
         BasicEducationProgram program = programRepository.findOne(programId);
+
         if (program == null) {
             throw new IncorrectIdentifierException("There is no program with id: " + programId);
         }
