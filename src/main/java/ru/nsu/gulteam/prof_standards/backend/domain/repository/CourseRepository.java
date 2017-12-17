@@ -29,4 +29,7 @@ public interface CourseRepository extends GraphRepository<Course> {
 
     @Query("START t=node({templateCourse}) MATCH (c:COURSE)-[:IMPLEMENTS]->(t) return c")
     List<Course> getImplementationsOf(@Param("templateCourse")TemplateCourse templateCourse);
+
+    @Query("START c=node({course}) MATCH (c)-[d:DEVELOPS]->() delete d")
+    void deleteAllDevelopRelations(@Param("course")Course course);
 }

@@ -15,6 +15,8 @@ import ru.nsu.gulteam.prof_standards.backend.web.dto.mapping.CourseMapper;
 import ru.nsu.gulteam.prof_standards.backend.web.dto.response.CourseDto;
 
 import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -68,8 +70,34 @@ public class CourseService {
     }
 
     public FullCourseInfo updateCourse(int courseId, CourseDto courseDto) {
+        List<Skills> developSkills = courseDto.getDevelopSkills().stream().map(id -> {
+            Skills skills = skillsRepository.findOne((long)id);
+
+            if(skills == null){
+                throw new IncorrectIdentifierException("There is no skills with id: " + id);
+            }
+
+            return skills;
+        }).collect(Collectors.toList());
+
+
+        List<Knowledge> developKnowledges = courseDto.getDevelopKnowledge().stream().map(id -> {
+            Knowledge knowledge = knowledgeRepository.findOne((long)id);
+
+            if(knowledge == null){
+                throw new IncorrectIdentifierException("There is no knowledge with id: " + id);
+            }
+
+            return knowledge;
+        }).collect(Collectors.toList());
+
         Course course = courseMapper.fromDto(courseDto);
         Course savedCourse = courseRepository.save(course, courseId);
+
+        courseRepository.deleteAllDevelopRelations(savedCourse);
+        developSkills.forEach(skills -> skillsRepository.connectToCourse(skills, savedCourse));
+        developKnowledges.forEach(knowledge -> knowledgeRepository.connectToCourse(knowledge, savedCourse));
+
         return getFullCourseInfo(savedCourse);
     }
 }
