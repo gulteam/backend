@@ -38,6 +38,13 @@ public class User {
     public User() {
     }
 
+    public User(Long id, String firstName, String secondName, String login) {
+        this.id = id;
+        this.firstName = firstName;
+        this.secondName = secondName;
+        this.login = login;
+    }
+
     public User(String firstName, String secondName, String login, String passwordHash) {
         this.firstName = firstName;
         this.secondName = secondName;
