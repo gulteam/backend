@@ -1,10 +1,13 @@
 package ru.nsu.gulteam.prof_standards.backend.web;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.nsu.gulteam.prof_standards.backend.domain.node.BasicEducationProgram;
+import ru.nsu.gulteam.prof_standards.backend.entity.AnalyzeResult;
 import ru.nsu.gulteam.prof_standards.backend.entity.FullCourseInfo;
+import ru.nsu.gulteam.prof_standards.backend.service.AnalyzeService;
 import ru.nsu.gulteam.prof_standards.backend.service.ProgramService;
 import ru.nsu.gulteam.prof_standards.backend.web.dto.mapping.CourseMapper;
 import ru.nsu.gulteam.prof_standards.backend.web.dto.mapping.ProgramMapper;
@@ -21,11 +24,14 @@ public class ProgramController {
     private ProgramService programService;
     private CourseMapper courseMapper;
     private ProgramMapper programMapper;
+    private AnalyzeService analyzeService;
 
-    public ProgramController(ProgramService programService, CourseMapper courseMapper, ProgramMapper programMapper) {
+    @Autowired
+    public ProgramController(ProgramService programService, CourseMapper courseMapper, ProgramMapper programMapper, AnalyzeService analyzeService) {
         this.programService = programService;
         this.courseMapper = courseMapper;
         this.programMapper = programMapper;
+        this.analyzeService = analyzeService;
     }
 
     @RequestMapping(path = "{programId}/addCourse", method = RequestMethod.GET)
@@ -68,5 +74,11 @@ public class ProgramController {
     public ResponseEntity<?> add() {
         BasicEducationProgram program = programService.addProgram();
         return ResponseEntity.ok(programMapper.toDto(program));
+    }
+
+    @RequestMapping(path = "{programId}/analyze", method = RequestMethod.GET)
+    public ResponseEntity<?> analyze(@PathVariable int programId) {
+        AnalyzeResult analyzeResult = analyzeService.analyze(programService.getProgram(programId));
+        return ResponseEntity.ok(analyzeResult);
     }
 }

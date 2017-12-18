@@ -57,6 +57,10 @@ public class TrajectoryService {
                 }
             });
 
+            if(!checkDependencyBetweenCourses(courses)){
+                return;
+            }
+
             result.add(new Trajectory(courses.stream().map(courseService::getFullCourseInfo).collect(Collectors.toList())));
             return;
         }
@@ -69,6 +73,11 @@ public class TrajectoryService {
             recursiveTrajectoryBuilding(result, baseCourses, variableCourses, templates, depth + 1);
             variableCourses.remove(implementation);
         }
+    }
+
+    private boolean checkDependencyBetweenCourses(List<Course> courses) {
+        Set<Long> identifiers = courses.stream().map(Course::getId).collect(Collectors.toSet());
+        return courses.stream().allMatch(course -> identifiers.containsAll(courseService.getFullCourseInfo(course).getPreviousCourses()));
     }
 
     public List<ProfessionalStandard> getProfessionalStandardsReachedBy(Trajectory trajectory) {

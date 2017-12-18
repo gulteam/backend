@@ -48,6 +48,10 @@ public class ProgramService {
             throw new IncorrectIdentifierException("There is no program with id: " + programId);
         }
 
+        return getAllCourses(program);
+    }
+
+    public List<FullCourseInfo> getAllCourses(BasicEducationProgram program) {
         List<Course> courses = courseRepository.findAllFromProgram(program);
         return courses.stream().map(courseService::getFullCourseInfo).collect(Collectors.toList());
     }
