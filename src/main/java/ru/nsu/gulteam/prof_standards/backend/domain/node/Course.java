@@ -1,10 +1,16 @@
 package ru.nsu.gulteam.prof_standards.backend.domain.node;
 
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import org.neo4j.ogm.annotation.GraphId;
 import org.neo4j.ogm.annotation.NodeEntity;
 import org.neo4j.ogm.annotation.Property;
 import ru.nsu.gulteam.prof_standards.backend.domain.type.AttestationForm;
 
+@Data
+@NoArgsConstructor
+@EqualsAndHashCode(of = "id")
 @NodeEntity(label = "COURSE")
 public class Course implements Comparable<Course> {
     @GraphId
@@ -26,9 +32,6 @@ public class Course implements Comparable<Course> {
     @Property(name = "APPROVED")
     private boolean approved = false;
 
-    public Course() {
-    }
-
     public Course(int amount, int semester, AttestationForm attestationForm, String name) {
         this.amount = amount;
         this.semester = semester;
@@ -36,68 +39,8 @@ public class Course implements Comparable<Course> {
         this.name = name;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public boolean isApproved() {
-        return approved;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public int getAmount() {
-        return amount;
-    }
-
-    public void setAmount(int amount) {
-        this.amount = amount;
-    }
-
-    public int getSemester() {
-        return semester;
-    }
-
-    public void setSemester(int semester) {
-        this.semester = semester;
-    }
-
-    public AttestationForm getAttestationForm() {
-        return attestationForm;
-    }
-
-    public void setAttestationForm(AttestationForm attestationForm) {
-        this.attestationForm = attestationForm;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setApproved(boolean approved) {
-        this.approved = approved;
-    }
-
-    @Override
-    public String toString() {
-        return "Course{" +
-                "name='" + name + '\'' +
-                '}';
-    }
-
     @Override
     public int compareTo(Course o) {
         return (int)(id - o.id);
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        return (obj instanceof Course && ((Course) obj).getId().equals(getId()));
     }
 }

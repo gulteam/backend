@@ -1,9 +1,15 @@
 package ru.nsu.gulteam.prof_standards.backend.domain.node;
 
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import org.neo4j.ogm.annotation.GraphId;
 import org.neo4j.ogm.annotation.NodeEntity;
 import org.neo4j.ogm.annotation.Property;
 
+@Data
+@NoArgsConstructor
+@EqualsAndHashCode(of = "id")
 @NodeEntity(label = "BASIC_EDUCATION_PROGRAM")
 public class BasicEducationProgram {
     @GraphId
@@ -13,26 +19,7 @@ public class BasicEducationProgram {
     @Property(name = "NAME")
     private String name;
 
-    public BasicEducationProgram() {
-    }
-
     public BasicEducationProgram(String name) {
-        this.name = name;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
         this.name = name;
     }
 }

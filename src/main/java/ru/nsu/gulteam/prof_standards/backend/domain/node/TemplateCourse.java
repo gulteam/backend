@@ -1,10 +1,16 @@
 package ru.nsu.gulteam.prof_standards.backend.domain.node;
 
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import org.neo4j.ogm.annotation.GraphId;
 import org.neo4j.ogm.annotation.NodeEntity;
 import org.neo4j.ogm.annotation.Property;
 import ru.nsu.gulteam.prof_standards.backend.domain.type.AttestationForm;
 
+@Data
+@NoArgsConstructor
+@EqualsAndHashCode(of = "id")
 @NodeEntity(label = "TEMPLATE_COURSE")
 public class TemplateCourse {
     @GraphId
@@ -20,44 +26,9 @@ public class TemplateCourse {
     @Property(name = "ATTESTATION_FORM")
     private AttestationForm attestationForm;
 
-    public TemplateCourse() {
-    }
-
     public TemplateCourse(int amount, int semester, AttestationForm attestationForm) {
         this.amount = amount;
         this.semester = semester;
-        this.attestationForm = attestationForm;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public int getAmount() {
-        return amount;
-    }
-
-    public void setAmount(int amount) {
-        this.amount = amount;
-    }
-
-    public int getSemester() {
-        return semester;
-    }
-
-    public void setSemester(int semester) {
-        this.semester = semester;
-    }
-
-    public AttestationForm getAttestationForm() {
-        return attestationForm;
-    }
-
-    public void setAttestationForm(AttestationForm attestationForm) {
         this.attestationForm = attestationForm;
     }
 }
