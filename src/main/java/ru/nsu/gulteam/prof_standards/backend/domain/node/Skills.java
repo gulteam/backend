@@ -1,9 +1,15 @@
 package ru.nsu.gulteam.prof_standards.backend.domain.node;
 
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import org.neo4j.ogm.annotation.GraphId;
 import org.neo4j.ogm.annotation.NodeEntity;
 import org.neo4j.ogm.annotation.Property;
 
+@Data
+@NoArgsConstructor
+@EqualsAndHashCode(of = "id")
 @NodeEntity(label = "SKILLS")
 public class Skills implements Comparable<Skills> {
     @GraphId
@@ -13,26 +19,7 @@ public class Skills implements Comparable<Skills> {
     @Property(name = "DESCRIPTION")
     private String description;
 
-    public Skills() {
-    }
-
     public Skills(String description) {
-        this.description = description;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
         this.description = description;
     }
 

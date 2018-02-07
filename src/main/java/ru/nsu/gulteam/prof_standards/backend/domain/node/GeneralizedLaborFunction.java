@@ -1,9 +1,15 @@
 package ru.nsu.gulteam.prof_standards.backend.domain.node;
 
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import org.neo4j.ogm.annotation.GraphId;
 import org.neo4j.ogm.annotation.NodeEntity;
 import org.neo4j.ogm.annotation.Property;
 
+@Data
+@NoArgsConstructor
+@EqualsAndHashCode(of = "id")
 @NodeEntity(label = "GENERALIZED_LABOR_FUNCTION")
 public class GeneralizedLaborFunction {
     @GraphId
@@ -19,44 +25,9 @@ public class GeneralizedLaborFunction {
     @Property(name = "QUALIFICATION_LEVEL")
     private int qualificationLevel;
 
-    public GeneralizedLaborFunction() {
-    }
-
     public GeneralizedLaborFunction(String name, String code, int qualificationLevel) {
         this.name = name;
         this.code = code;
-        this.qualificationLevel = qualificationLevel;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getCode() {
-        return code;
-    }
-
-    public void setCode(String code) {
-        this.code = code;
-    }
-
-    public int getQualificationLevel() {
-        return qualificationLevel;
-    }
-
-    public void setQualificationLevel(int qualificationLevel) {
         this.qualificationLevel = qualificationLevel;
     }
 }

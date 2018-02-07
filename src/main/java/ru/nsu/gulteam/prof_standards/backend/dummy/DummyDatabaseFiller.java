@@ -7,8 +7,6 @@ import ru.nsu.gulteam.prof_standards.backend.domain.node.*;
 import ru.nsu.gulteam.prof_standards.backend.domain.repository.*;
 import ru.nsu.gulteam.prof_standards.backend.domain.type.AttestationForm;
 import ru.nsu.gulteam.prof_standards.backend.domain.type.UserRole;
-import ru.nsu.gulteam.prof_standards.backend.entity.Trajectory;
-import ru.nsu.gulteam.prof_standards.backend.service.TrajectoryService;
 import ru.nsu.gulteam.prof_standards.backend.service.UserService;
 
 import javax.annotation.PostConstruct;

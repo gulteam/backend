@@ -1,17 +1,14 @@
 package ru.nsu.gulteam.prof_standards.backend.entity;
 
-import ru.nsu.gulteam.prof_standards.backend.domain.node.Course;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class Trajectory {
     private List<FullCourseInfo> courses;
-
-    public Trajectory(List<FullCourseInfo> courses) {
-        this.courses = courses;
-    }
-
-    public List<FullCourseInfo> getCourses() {
-        return courses;
-    }
 }
