@@ -1,10 +1,14 @@
 package ru.nsu.gulteam.prof_standards.backend.web.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import ru.nsu.gulteam.prof_standards.backend.domain.type.UserRole;
 
 import javax.validation.constraints.NotNull;
 
+@Data
+@NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class RoleDto {
     @NotNull
@@ -12,23 +16,4 @@ public class RoleDto {
 
     @NotNull
     private UserRole name;
-
-    public RoleDto() {
-    }
-
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
-
-    public UserRole getName() {
-        return name;
-    }
-
-    public void setName(UserRole name) {
-        this.name = name;
-    }
 }

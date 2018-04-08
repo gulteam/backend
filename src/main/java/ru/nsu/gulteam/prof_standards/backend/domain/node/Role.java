@@ -1,10 +1,16 @@
 package ru.nsu.gulteam.prof_standards.backend.domain.node;
 
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import org.neo4j.ogm.annotation.GraphId;
 import org.neo4j.ogm.annotation.NodeEntity;
 import org.neo4j.ogm.annotation.Property;
 import ru.nsu.gulteam.prof_standards.backend.domain.type.UserRole;
 
+@Data
+@NoArgsConstructor
+@EqualsAndHashCode(of = "id")
 @NodeEntity(label = "ROLE")
 public class Role {
     @GraphId
@@ -15,25 +21,6 @@ public class Role {
     private UserRole name;
 
     public Role(UserRole name) {
-        this.name = name;
-    }
-
-    public Role() {
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public UserRole getName() {
-        return name;
-    }
-
-    public void setName(UserRole name) {
         this.name = name;
     }
 }
