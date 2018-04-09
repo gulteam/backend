@@ -24,15 +24,17 @@ public class CourseService {
     private SkillsRepository skillsRepository;
     private TemplateCourseRepository templateCourseRepository;
     private BasicEducationProgramRepository programRepository;
+    private UserService userService;
 
     @Autowired
-    public CourseService(CourseRepository courseRepository, CourseMapper courseMapper, KnowledgeRepository knowledgeRepository, SkillsRepository skillsRepository, TemplateCourseRepository templateCourseRepository, BasicEducationProgramRepository programRepository) {
+    public CourseService(CourseRepository courseRepository, CourseMapper courseMapper, KnowledgeRepository knowledgeRepository, SkillsRepository skillsRepository, TemplateCourseRepository templateCourseRepository, BasicEducationProgramRepository programRepository, UserService userService) {
         this.courseRepository = courseRepository;
         this.courseMapper = courseMapper;
         this.knowledgeRepository = knowledgeRepository;
         this.skillsRepository = skillsRepository;
         this.templateCourseRepository = templateCourseRepository;
         this.programRepository = programRepository;
+        this.userService = userService;
     }
 
     public FullCourseInfo getFullCourseInfo(Course course) {
@@ -68,6 +70,8 @@ public class CourseService {
         if(fullCourseInfo.getNextCourses() == null){
             fullCourseInfo.setNextCourses(Collections.emptyList());
         }
+
+        fullCourseInfo.setCreatedBy(userService.getFullUserInfo(courseRepository.getCreator(course)));
 
         return fullCourseInfo;
     }

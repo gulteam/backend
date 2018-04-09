@@ -21,6 +21,8 @@ public class FullCourseInfo {
     private List<Long> developKnowledge;
     private long programId;
 
+    private FullUserInfo createdBy;
+
     public FullCourseInfo(Course course) {
         this.course = course;
     }

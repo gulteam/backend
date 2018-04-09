@@ -251,5 +251,10 @@ public class DummyDatabaseFiller {
         skillsRepository.connectToCourse(SM1, turboLearning);
         skillsRepository.connectToCourse(SW2, turboLearning);
         knowledgeRepository.connectToCourse(KW2, turboLearning);
+
+
+        courseRepository.findAll().forEach(course->{
+            courseRepository.connectToCreator(course, users.get(3)); // With me c:
+        });
     }
 }

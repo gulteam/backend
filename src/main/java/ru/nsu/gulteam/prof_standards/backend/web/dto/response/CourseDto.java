@@ -35,4 +35,6 @@ public class CourseDto {
     private List<Integer> developKnowledge;
     @NotNull
     private int programId;
+    @NotNull
+    private UserDto createdBy;
 }

@@ -15,6 +15,7 @@ public interface CourseMapper {
             @Mapping(source = "course.amount", target = "amount"),
             @Mapping(source = "course.semester", target = "semester"),
             @Mapping(source = "course.attestationForm", target = "attestationForm"),
+            @Mapping(source = "course.createdBy", target = "createdBy"),
     })
     CourseDto toDto(FullCourseInfo course);
 

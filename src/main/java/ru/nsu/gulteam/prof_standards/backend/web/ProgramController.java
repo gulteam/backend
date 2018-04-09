@@ -1,20 +1,22 @@
 package ru.nsu.gulteam.prof_standards.backend.web;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.nsu.gulteam.prof_standards.backend.domain.node.BasicEducationProgram;
+import ru.nsu.gulteam.prof_standards.backend.domain.node.User;
 import ru.nsu.gulteam.prof_standards.backend.entity.AnalyzeResult;
 import ru.nsu.gulteam.prof_standards.backend.entity.FullCourseInfo;
 import ru.nsu.gulteam.prof_standards.backend.service.AnalyzeService;
 import ru.nsu.gulteam.prof_standards.backend.service.ProgramService;
+import ru.nsu.gulteam.prof_standards.backend.service.SecurityService;
+import ru.nsu.gulteam.prof_standards.backend.service.UserService;
 import ru.nsu.gulteam.prof_standards.backend.web.dto.mapping.CourseMapper;
 import ru.nsu.gulteam.prof_standards.backend.web.dto.mapping.ProgramMapper;
 import ru.nsu.gulteam.prof_standards.backend.web.dto.response.BasicEducationProgramDto;
-import ru.nsu.gulteam.prof_standards.backend.web.dto.response.CourseDto;
 import ru.nsu.gulteam.prof_standards.backend.web.dto.response.Message;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,18 +27,29 @@ public class ProgramController {
     private CourseMapper courseMapper;
     private ProgramMapper programMapper;
     private AnalyzeService analyzeService;
+    private final SecurityService securityService;
+    private final UserService userService;
 
     @Autowired
-    public ProgramController(ProgramService programService, CourseMapper courseMapper, ProgramMapper programMapper, AnalyzeService analyzeService) {
+    public ProgramController(ProgramService programService, CourseMapper courseMapper, ProgramMapper programMapper, AnalyzeService analyzeService, SecurityService securityService, UserService userService) {
         this.programService = programService;
         this.courseMapper = courseMapper;
         this.programMapper = programMapper;
         this.analyzeService = analyzeService;
+        this.securityService = securityService;
+        this.userService = userService;
     }
 
     @RequestMapping(path = "{programId}/addCourse", method = RequestMethod.GET)
     public ResponseEntity<?> addCourse(@PathVariable int programId) {
-        FullCourseInfo course = programService.addCourseTo(programId);
+        User user = userService.getUserEntity(securityService.getUserDetails());
+
+        // Todo: debug
+        if(user == null){
+            throw new RuntimeException("Cann't create course without user");
+        }
+
+        FullCourseInfo course = programService.addCourseTo(user, programId);
         return ResponseEntity.ok(courseMapper.toDto(course));
     }
 

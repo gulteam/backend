@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.nsu.gulteam.prof_standards.backend.domain.node.BasicEducationProgram;
 import ru.nsu.gulteam.prof_standards.backend.domain.node.Course;
+import ru.nsu.gulteam.prof_standards.backend.domain.node.User;
 import ru.nsu.gulteam.prof_standards.backend.domain.repository.BasicEducationProgramRepository;
 import ru.nsu.gulteam.prof_standards.backend.domain.repository.CourseRepository;
 import ru.nsu.gulteam.prof_standards.backend.entity.FullCourseInfo;
@@ -29,7 +30,7 @@ public class ProgramService {
         this.programMapper = programMapper;
     }
 
-    public FullCourseInfo addCourseTo(long programId) {
+    public FullCourseInfo addCourseTo(User creator, long programId) {
         BasicEducationProgram program = programRepository.findOne(programId);
 
         if (program == null) {
@@ -38,6 +39,7 @@ public class ProgramService {
 
         Course course = courseRepository.save(new Course());
         courseRepository.connectToProgram(course, program);
+        courseRepository.connectToCreator(course, creator);
 
         return courseService.getFullCourseInfo(course);
     }
