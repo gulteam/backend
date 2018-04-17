@@ -20,6 +20,9 @@ public interface KnowledgeRepository extends GraphRepository<Knowledge> {
     @Query("START p=node({professionalStandard}) MATCH (k:KNOWLEDGE)<-[*0..]-(p) return k")
     Set<Knowledge> getRequiredForStandard(@Param("professionalStandard")ProfessionalStandard professionalStandard);
 
+    @Query("START b=node({basicEducationProgram}) MATCH (k:KNOWLEDGE)<-[*0..]-(b) return k")
+    Set<Knowledge> getDevelopByBasicEducationProgram(@Param("basicEducationProgram") BasicEducationProgram basicEducationProgram);
+
     @Query("START c=node({course}) MATCH (c)-[:DEVELOPS]->(k:KNOWLEDGE) return k")
     Set<Knowledge> getDevelopsByCourse(@Param("course")Course course);
 }

@@ -1,4 +1,4 @@
-package ru.nsu.gulteam.prof_standards.backend.web.security;
+package ru.nsu.gulteam.prof_standards.backend.web;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -32,4 +32,5 @@ public class KnowledgeController {
         List<Knowledge> knowledges = knowledgeService.getAllKnowledge();
         return ResponseEntity.ok(knowledges.stream().map(knowledgeMapper::toDto).collect(Collectors.toList()));
     }
+
 }
