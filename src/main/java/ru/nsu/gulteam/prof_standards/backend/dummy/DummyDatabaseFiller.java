@@ -62,6 +62,7 @@ public class DummyDatabaseFiller {
 
         // Faculties
         Faculty FIT = facultyRepository.save(new Faculty("ФИТ"));
+        Faculty FIJA = facultyRepository.save(new Faculty("ФИЯ"));
 
         // Department
         Department KOI = departmentRepository.save(new Department("Общей информатики"));
@@ -108,6 +109,10 @@ public class DummyDatabaseFiller {
         User fitDean = userService.addNew(new User("Александр", "Информационный", "fit", passwordEncoder.encode("fit")));
         facultyRepository.connectToUser(FIT, fitDean);
         userService.setRole(fitDean, UserRole.DEAN_MEMBER);
+
+        User fijaDean = userService.addNew(new User("Александра", "Иностранная", "fija", passwordEncoder.encode("fija")));
+        facultyRepository.connectToUser(FIJA, fijaDean);
+        userService.setRole(fijaDean, UserRole.DEAN_MEMBER);
 
         // Professional standard
         ProfessionalStandard webDeveloper = professionalStandardRepository.save(new ProfessionalStandard("Web-developer", "A"));
@@ -183,6 +188,8 @@ public class DummyDatabaseFiller {
 
         // Basic Education Program
         BasicEducationProgram educationProgram = basicEducationProgramRepository.save(new BasicEducationProgram("Test education program"));
+        basicEducationProgramRepository.connectToFaculty(educationProgram, FIT);
+        basicEducationProgramRepository.connectToCreator(educationProgram, fitDean);
 
         // Courses
         Course programming = courseRepository.save(new Course(36, 1, AttestationForm.EXAM, "Programming C#"));

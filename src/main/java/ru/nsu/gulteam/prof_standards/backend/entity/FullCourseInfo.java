@@ -1,6 +1,7 @@
 package ru.nsu.gulteam.prof_standards.backend.entity;
 
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import ru.nsu.gulteam.prof_standards.backend.domain.node.Course;
 
@@ -21,6 +22,7 @@ public class FullCourseInfo {
     private List<Long> developKnowledge;
     private long programId;
 
+    private boolean canEdit;
     private FullUserInfo createdBy;
 
     public FullCourseInfo(Course course) {

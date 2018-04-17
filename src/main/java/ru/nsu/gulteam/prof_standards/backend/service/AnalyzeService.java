@@ -33,7 +33,7 @@ public class AnalyzeService {
     public AnalyzeResult analyze(BasicEducationProgram program) {
         Map<Long, FullCourseInfo> courses = new TreeMap<>();
         List<Trajectory> trajectories = trajectoryService.generateAllTrajectories(program);
-        programService.getAllCourses(program).forEach(course -> courses.put(course.getCourse().getId(), course));
+        programService.getAllCourses(null, program).forEach(course -> courses.put(course.getCourse().getId(), course));
         List<String> errorMessages = new ArrayList<>();
 
         errorMessages.addAll(checkForIncorrectDependsOrder(courses));

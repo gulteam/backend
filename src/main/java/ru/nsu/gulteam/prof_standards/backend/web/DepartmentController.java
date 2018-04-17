@@ -3,12 +3,8 @@ package ru.nsu.gulteam.prof_standards.backend.web;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.nsu.gulteam.prof_standards.backend.domain.node.Department;
-import ru.nsu.gulteam.prof_standards.backend.entity.FullCourseInfo;
-import ru.nsu.gulteam.prof_standards.backend.service.CourseService;
 import ru.nsu.gulteam.prof_standards.backend.service.DepartmentService;
-import ru.nsu.gulteam.prof_standards.backend.web.dto.mapping.CourseMapper;
 import ru.nsu.gulteam.prof_standards.backend.web.dto.mapping.DepartmentMapper;
-import ru.nsu.gulteam.prof_standards.backend.web.dto.response.CourseDto;
 import ru.nsu.gulteam.prof_standards.backend.web.dto.response.DepartmentDto;
 import ru.nsu.gulteam.prof_standards.backend.web.dto.response.Message;
 

@@ -37,4 +37,6 @@ public class UserDto {
     private FacultyDto faculty;
 
     private DepartmentDto department;
+
+    private boolean canCreateProgram;
 }

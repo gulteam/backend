@@ -2,12 +2,11 @@ package ru.nsu.gulteam.prof_standards.backend.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.nsu.gulteam.prof_standards.backend.domain.node.Course;
-import ru.nsu.gulteam.prof_standards.backend.domain.node.Knowledge;
-import ru.nsu.gulteam.prof_standards.backend.domain.node.Skills;
-import ru.nsu.gulteam.prof_standards.backend.domain.node.TemplateCourse;
+import ru.nsu.gulteam.prof_standards.backend.domain.node.*;
 import ru.nsu.gulteam.prof_standards.backend.domain.repository.*;
+import ru.nsu.gulteam.prof_standards.backend.domain.type.UserRole;
 import ru.nsu.gulteam.prof_standards.backend.entity.FullCourseInfo;
+import ru.nsu.gulteam.prof_standards.backend.entity.FullUserInfo;
 import ru.nsu.gulteam.prof_standards.backend.exception.IncorrectIdentifierException;
 import ru.nsu.gulteam.prof_standards.backend.web.dto.mapping.CourseMapper;
 import ru.nsu.gulteam.prof_standards.backend.web.dto.response.CourseDto;
@@ -37,7 +36,7 @@ public class CourseService {
         this.userService = userService;
     }
 
-    public FullCourseInfo getFullCourseInfo(Course course) {
+    public FullCourseInfo getFullCourseInfo(User user, Course course) {
         FullCourseInfo fullCourseInfo = new FullCourseInfo(course);
 
         fullCourseInfo.setDevelopKnowledge(knowledgeRepository.getDevelopsByCourse(course).stream().map(Knowledge::getId).collect(Collectors.toList()));
@@ -73,6 +72,8 @@ public class CourseService {
 
         fullCourseInfo.setCreatedBy(userService.getFullUserInfo(courseRepository.getCreator(course)));
 
+        fullCourseInfo.setCanEdit(canEditCourse(user, course));
+
         return fullCourseInfo;
     }
 
@@ -92,7 +93,7 @@ public class CourseService {
         courseRepository.delete(course);
     }
 
-    public FullCourseInfo updateCourse(int courseId, CourseDto courseDto) {
+    public FullCourseInfo updateCourse(User user, int courseId, CourseDto courseDto) {
         List<Skills> developSkills = courseDto.getDevelopSkills().stream().map(id -> {
             Skills skills = skillsRepository.findOne((long)id);
 
@@ -134,6 +135,27 @@ public class CourseService {
         courseRepository.removeAllBased(savedCourse);
         previousCourses.forEach(base -> courseRepository.setBasedOn(savedCourse, base));
 
-        return getFullCourseInfo(savedCourse);
+        return getFullCourseInfo(user, savedCourse);
+    }
+
+    public boolean canReadCourse(User user, Course course) {
+        return true;
+    }
+
+    public boolean canEditCourse(User user, Course course) {
+        if(user == null){
+            return false;
+        }
+
+        FullUserInfo fullUserInfo = userService.getFullUserInfo(user);
+
+        UserRole role = fullUserInfo.getRole().getName();
+        Faculty courseFaculty = programRepository.getFacultyOf(programRepository.getProgramOf(course));
+
+        return role.equals(UserRole.ADMINISTRATOR) || role.equals(UserRole.DEAN_MEMBER) && fullUserInfo.getFaculty().equals(courseFaculty);
+    }
+
+    public FullCourseInfo getFullCourseInfo(Course course) {
+        return getFullCourseInfo(null, course);
     }
 }

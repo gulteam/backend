@@ -37,4 +37,6 @@ public class CourseDto {
     private int programId;
     @NotNull
     private UserDto createdBy;
+    @NotNull
+    private boolean canEdit;
 }
