@@ -7,6 +7,7 @@ import ru.nsu.gulteam.prof_standards.backend.domain.node.*;
 import ru.nsu.gulteam.prof_standards.backend.domain.repository.*;
 import ru.nsu.gulteam.prof_standards.backend.domain.type.AttestationForm;
 import ru.nsu.gulteam.prof_standards.backend.domain.type.UserRole;
+import ru.nsu.gulteam.prof_standards.backend.service.TrajectoryService;
 import ru.nsu.gulteam.prof_standards.backend.service.UserService;
 
 import javax.annotation.PostConstruct;
@@ -29,9 +30,10 @@ public class DummyDatabaseFiller {
     private PasswordEncoder passwordEncoder;
     private FacultyRepository facultyRepository;
     private DepartmentRepository departmentRepository;
+    private TrajectoryService trajectoryService;
 
     @Autowired
-    public DummyDatabaseFiller(MainRepository mainRepository, UserService userService, TemplateCourseRepository templateCourseRepository, SkillsRepository skillsRepository, ProfessionalStandardRepository professionalStandardRepository, LaborFunctionRepository laborFunctionRepository, KnowledgeRepository knowledgeRepository, GeneralizedLaborFunctionRepository generalizedLaborFunctionRepository, CourseRepository courseRepository, BasicEducationProgramRepository basicEducationProgramRepository, DummyDatabaseFillerProperties dummyDatabaseFillerProperties, PasswordEncoder passwordEncoder, FacultyRepository facultyRepository, DepartmentRepository departmentRepository) {
+    public DummyDatabaseFiller(MainRepository mainRepository, UserService userService, TemplateCourseRepository templateCourseRepository, SkillsRepository skillsRepository, ProfessionalStandardRepository professionalStandardRepository, LaborFunctionRepository laborFunctionRepository, KnowledgeRepository knowledgeRepository, GeneralizedLaborFunctionRepository generalizedLaborFunctionRepository, CourseRepository courseRepository, BasicEducationProgramRepository basicEducationProgramRepository, DummyDatabaseFillerProperties dummyDatabaseFillerProperties, PasswordEncoder passwordEncoder, FacultyRepository facultyRepository, DepartmentRepository departmentRepository, TrajectoryService trajectoryService) {
         this.mainRepository = mainRepository;
         this.userService = userService;
         this.templateCourseRepository = templateCourseRepository;
@@ -46,6 +48,7 @@ public class DummyDatabaseFiller {
         this.passwordEncoder = passwordEncoder;
         this.facultyRepository = facultyRepository;
         this.departmentRepository = departmentRepository;
+        this.trajectoryService = trajectoryService;
     }
 
     @PostConstruct
@@ -251,5 +254,7 @@ public class DummyDatabaseFiller {
         skillsRepository.connectToCourse(SM1, turboLearning);
         skillsRepository.connectToCourse(SW2, turboLearning);
         knowledgeRepository.connectToCourse(KW2, turboLearning);
+
+        trajectoryService.updateTrajectories(educationProgram);
     }
 }

@@ -17,17 +17,50 @@ public class TrajectoryService {
     private SkillsRepository skillsRepository;
     private KnowledgeRepository knowledgeRepository;
     private CourseService courseService;
+    private TrajectoryRepository trajectoryRepository;
+    private TrajectoryCourseRepository trajectoryCourseRepository;
 
-    public TrajectoryService(CourseRepository courseRepository, TemplateCourseRepository templateCourseRepository, ProfessionalStandardRepository professionalStandardRepository, SkillsRepository skillsRepository, KnowledgeRepository knowledgeRepository, CourseService courseService) {
+    public TrajectoryService(CourseRepository courseRepository, TemplateCourseRepository templateCourseRepository, ProfessionalStandardRepository professionalStandardRepository, SkillsRepository skillsRepository, KnowledgeRepository knowledgeRepository, CourseService courseService, TrajectoryRepository trajectoryRepository, TrajectoryCourseRepository trajectoryCourseRepository) {
         this.courseRepository = courseRepository;
         this.templateCourseRepository = templateCourseRepository;
         this.professionalStandardRepository = professionalStandardRepository;
         this.skillsRepository = skillsRepository;
         this.knowledgeRepository = knowledgeRepository;
         this.courseService = courseService;
+        this.trajectoryRepository = trajectoryRepository;
+        this.trajectoryCourseRepository = trajectoryCourseRepository;
     }
 
-    public List<Trajectory> generateAllTrajectories(BasicEducationProgram program){
+    public void updateTrajectories(BasicEducationProgram program) {
+        List<Trajectory> trajectories = generateAllTrajectories(program);
+
+        for (StudyTrajectory tr : trajectoryRepository.findAllByProgram(program)) {
+            Set<TrajectoryCourse> byTrajectory = trajectoryCourseRepository.getByTrajectory(tr);
+            trajectoryCourseRepository.delete(byTrajectory);
+            trajectoryRepository.delete(tr);
+        }
+
+        for (Trajectory trajectory : trajectories) {
+            StudyTrajectory tr = new StudyTrajectory();
+            tr = trajectoryRepository.save(tr);
+            tr = trajectoryRepository.connectToProgram(tr, program);
+
+            for (int i = 0; i < trajectory.getCourses().size(); ++i) {
+                Course course = trajectory.getCourses().get(i).getCourse();
+                TrajectoryCourse trajectoryCourse = new TrajectoryCourse();
+                trajectoryCourse.setOrder(i);
+                trajectoryCourse = trajectoryCourseRepository.save(trajectoryCourse);
+                trajectoryCourse = trajectoryCourseRepository.connectToTrajectory(tr, trajectoryCourse);
+                trajectoryCourseRepository.connectToCourse(course, trajectoryCourse);
+            }
+
+            for (ProfessionalStandard standard : getProfessionalStandardsReachedBy(trajectory)) {
+                tr = trajectoryRepository.connectToStandard(tr, standard);
+            }
+        }
+    }
+
+    private List<Trajectory> generateAllTrajectories(BasicEducationProgram program){
         List<Trajectory> result = new ArrayList<>();
 
         List<Course> baseCourses = courseRepository.findAllBaseFromProgram(program);
@@ -71,7 +104,7 @@ public class TrajectoryService {
         }
     }
 
-    public List<ProfessionalStandard> getProfessionalStandardsReachedBy(Trajectory trajectory) {
+    private List<ProfessionalStandard> getProfessionalStandardsReachedBy(Trajectory trajectory) {
         List<ProfessionalStandard> reachedStandards = new ArrayList<>();
 
         for(ProfessionalStandard professionalStandard : professionalStandardRepository.findAll()){

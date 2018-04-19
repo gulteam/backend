@@ -6,9 +6,12 @@ import org.springframework.data.repository.query.Param;
 import ru.nsu.gulteam.prof_standards.backend.domain.node.BasicEducationProgram;
 import ru.nsu.gulteam.prof_standards.backend.domain.node.Course;
 import ru.nsu.gulteam.prof_standards.backend.domain.node.Skills;
+import ru.nsu.gulteam.prof_standards.backend.domain.node.StudyTrajectory;
 import ru.nsu.gulteam.prof_standards.backend.domain.node.TemplateCourse;
+import ru.nsu.gulteam.prof_standards.backend.domain.node.TrajectoryCourse;
 
 import java.util.List;
+import java.util.Set;
 
 public interface CourseRepository extends GraphRepository<Course> {
     List<Course> findAll();
@@ -44,4 +47,7 @@ public interface CourseRepository extends GraphRepository<Course> {
 
     @Query("START c=node({course}) MATCH (c)-[b:BASED_ON]->(:COURSE) delete b")
     void removeAllBased(@Param("course")Course course);
+
+    @Query("START f=node({course}) MATCH (f)-[:IS]->(d:COURSE) RETURN d")
+    Course findByTrajectoryCourse(@Param("course")TrajectoryCourse course);
 }

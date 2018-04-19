@@ -20,13 +20,15 @@ public class ProgramService {
     private CourseRepository courseRepository;
     private CourseService courseService;
     private ProgramMapper programMapper;
+    private TrajectoryService trajectoryService;
 
     @Autowired
-    public ProgramService(BasicEducationProgramRepository programRepository, CourseRepository courseRepository, CourseService courseService, ProgramMapper programMapper) {
+    public ProgramService(BasicEducationProgramRepository programRepository, CourseRepository courseRepository, CourseService courseService, ProgramMapper programMapper, TrajectoryService trajectoryService) {
         this.programRepository = programRepository;
         this.courseRepository = courseRepository;
         this.courseService = courseService;
         this.programMapper = programMapper;
+        this.trajectoryService = trajectoryService;
     }
 
     public FullCourseInfo addCourseTo(long programId) {
@@ -74,12 +76,15 @@ public class ProgramService {
     }
 
     public BasicEducationProgram addProgram() {
-        return programRepository.save(new BasicEducationProgram());
+        BasicEducationProgram program = programRepository.save(new BasicEducationProgram());
+        trajectoryService.updateTrajectories(program);
+        return program;
     }
 
     public BasicEducationProgram updateProgram(int programId, BasicEducationProgramDto programDto) {
         BasicEducationProgram program = programMapper.fromDto(programDto);
         BasicEducationProgram savedProgram = programRepository.save(program, programId);
+        trajectoryService.updateTrajectories(program); // TODO batalin: async ?
         return savedProgram;
     }
 }
