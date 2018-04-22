@@ -1,13 +1,16 @@
 package ru.nsu.gulteam.prof_standards.backend.service;
 
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import ru.nsu.gulteam.prof_standards.backend.domain.node.*;
 import ru.nsu.gulteam.prof_standards.backend.domain.repository.*;
 import ru.nsu.gulteam.prof_standards.backend.entity.FullCourseInfo;
 import ru.nsu.gulteam.prof_standards.backend.entity.Trajectory;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Service
 public class TrajectoryService {
@@ -33,6 +36,7 @@ public class TrajectoryService {
 
     public void updateTrajectories(BasicEducationProgram program) {
         List<Trajectory> trajectories = generateAllTrajectories(program);
+        checkTrajectory(trajectories);
 
         for (StudyTrajectory tr : trajectoryRepository.findAllByProgram(program)) {
             Set<TrajectoryCourse> byTrajectory = trajectoryCourseRepository.getByTrajectory(tr);
@@ -60,47 +64,35 @@ public class TrajectoryService {
         }
     }
 
-    private List<Trajectory> generateAllTrajectories(BasicEducationProgram program){
+    private List<Trajectory> generateAllTrajectories(BasicEducationProgram program) {
         List<Trajectory> result = new ArrayList<>();
 
         List<Course> baseCourses = courseRepository.findAllBaseFromProgram(program);
         List<TemplateCourse> templates = templateCourseRepository.findAllFromProgram(program);
-        recursiveTrajectoryBuilding(result, baseCourses, new ArrayList<>(), templates, 0);
+
+        List<Course> courseKit = new ArrayList<>();
+        Map<Integer, Integer> templateIndexes = new HashMap<>();
+        fillCourseKit(courseKit, templateIndexes, baseCourses, templates);
+
+        recursiveTrajectoryBuilding(result, new ArrayList<>(courseKit), templates, templateIndexes, 0);
 
         return result;
     }
 
-    private void recursiveTrajectoryBuilding(List<Trajectory> result, List<Course> baseCourses, List<Course> variableCourses, List<TemplateCourse> templates, int depth) {
+    private void recursiveTrajectoryBuilding(List<Trajectory> result, List<Course> courses, List<TemplateCourse> templates, Map<Integer, Integer> templateIndexes, int depth) {
         if(depth == templates.size()){
-            List<Course> courses = new ArrayList<>(baseCourses);
-            courses.addAll(variableCourses);
-
-            courses.sort((c1, c2)->{
-                if(c1.getSemester() != c2.getSemester()){
-                    return c1.getSemester() - c2.getSemester();
-                }
-                else if(baseCourses.contains(c1) && !baseCourses.contains(c2)){
-                    return -1;
-                }
-                else if(!baseCourses.contains(c1) && baseCourses.contains(c2)){
-                    return 1;
-                }
-                else{
-                    return (int)(c1.getId() - c2.getId());
-                }
-            });
-
             result.add(new Trajectory(courses.stream().map(courseService::getFullCourseInfo).collect(Collectors.toList())));
             return;
         }
 
         TemplateCourse templateCourse = templates.get(depth);
         List<Course> implementations = courseRepository.getImplementationsOf(templateCourse);
+        int templateIndex = templateIndexes.get(depth);
 
-        for(Course implementation : implementations){
-            variableCourses.add(implementation);
-            recursiveTrajectoryBuilding(result, baseCourses, variableCourses, templates, depth + 1);
-            variableCourses.remove(implementation);
+        for(Course implementation : implementations) {
+            courses.set(templateIndex, implementation);
+            recursiveTrajectoryBuilding(result, courses, templates, templateIndexes, depth + 1);
+            courses.set(templateIndex, null);
         }
     }
 
@@ -125,5 +117,76 @@ public class TrajectoryService {
         }
 
         return reachedStandards;
+    }
+
+    private void checkTrajectory(List<Trajectory> trajectories) {
+        for (Trajectory trajectory : trajectories) {
+            if (trajectory.getCourses().stream().anyMatch(Objects::isNull)) {
+                throw new RuntimeException("Trajectory with gap");
+            }
+
+            if (CollectionUtils.isEmpty(getProfessionalStandardsReachedBy(trajectory))) {
+                throw new RuntimeException("Trajectory without prof. standard");
+            }
+        }
+    }
+
+    private void fillCourseKit(List<Course> courseKit, Map<Integer, Integer> templateIndexes, List<Course> basic, List<TemplateCourse> templates) {
+        courseKit.clear();
+        templateIndexes.clear();
+
+        Queue<Holder> queue = new PriorityQueue<>();
+        basic.stream().map(Holder::new).forEach(queue::add);
+        IntStream.range(0, templates.size()).mapToObj(i -> new Holder(templates.get(i), i)).forEach(queue::add);
+
+        for (int i = 0; !queue.isEmpty(); ++i) {
+            Holder holder = queue.poll();
+
+            if (holder.course == null) {
+                courseKit.add(null);
+                templateIndexes.put(holder.templateIndex, i);
+                continue;
+            }
+
+            courseKit.add(holder.course);
+        }
+    }
+
+    private static class Holder implements Comparable<Holder> {
+        Course course;
+        TemplateCourse template;
+        int templateIndex;
+
+        public Holder(Course course) {
+            this.course = course;
+        }
+
+        public Holder(TemplateCourse template, int templateIndex) {
+            this.template = template;
+            this.templateIndex = templateIndex;
+        }
+
+        private int getSemester() {
+            return course != null ? course.getSemester() : template.getSemester();
+        }
+
+        @Override
+        public int compareTo(Holder o) {
+            int semester = getSemester();
+            int otherSemester = o.getSemester();
+            if (semester != otherSemester) {
+                return semester - otherSemester;
+            }
+
+            if (course != null && o.course == null) {
+                return -1;
+            }
+
+            if (course == null && o.course != null) {
+                return 1;
+            }
+
+            return 0;
+        }
     }
 }
