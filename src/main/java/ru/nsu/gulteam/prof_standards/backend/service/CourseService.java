@@ -158,4 +158,11 @@ public class CourseService {
     public FullCourseInfo getFullCourseInfo(Course course) {
         return getFullCourseInfo(null, course);
     }
+
+    public Course setRating(long courseID, double rating)
+    {
+        Course course = courseRepository.findOne(courseID);
+        course.setRating(rating);
+        return courseRepository.save(course);
+    }
 }

@@ -1,12 +1,15 @@
 package ru.nsu.gulteam.prof_standards.backend.service;
 
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.nsu.gulteam.prof_standards.backend.domain.node.BasicEducationProgram;
 import ru.nsu.gulteam.prof_standards.backend.domain.node.Course;
+import ru.nsu.gulteam.prof_standards.backend.domain.node.TemplateCourse;
 import ru.nsu.gulteam.prof_standards.backend.domain.node.User;
 import ru.nsu.gulteam.prof_standards.backend.domain.repository.BasicEducationProgramRepository;
 import ru.nsu.gulteam.prof_standards.backend.domain.repository.CourseRepository;
+import ru.nsu.gulteam.prof_standards.backend.domain.repository.TemplateCourseRepository;
 import ru.nsu.gulteam.prof_standards.backend.domain.type.UserRole;
 import ru.nsu.gulteam.prof_standards.backend.entity.FullBasicEducationProgramInfo;
 import ru.nsu.gulteam.prof_standards.backend.entity.FullCourseInfo;
@@ -19,6 +22,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@AllArgsConstructor
 public class ProgramService {
     private BasicEducationProgramRepository programRepository;
     private CourseRepository courseRepository;
@@ -26,16 +30,7 @@ public class ProgramService {
     private ProgramMapper programMapper;
     private FacultyService facultyService;
     private UserService userService;
-
-    @Autowired
-    public ProgramService(BasicEducationProgramRepository programRepository, CourseRepository courseRepository, CourseService courseService, ProgramMapper programMapper, FacultyService facultyService, UserService userService) {
-        this.programRepository = programRepository;
-        this.courseRepository = courseRepository;
-        this.courseService = courseService;
-        this.programMapper = programMapper;
-        this.facultyService = facultyService;
-        this.userService = userService;
-    }
+    private TemplateCourseRepository templateCourseRepository;
 
     public FullCourseInfo addCourseTo(User creator, long programId) {
         BasicEducationProgram program = programRepository.findOne(programId);
@@ -133,5 +128,9 @@ public class ProgramService {
                 programRepository.getCreator(program));
 
         return fullInfo;
+    }
+
+    public List<TemplateCourse> getAllTemplateCourses(User user, BasicEducationProgram basicEducationProgram) {
+        return templateCourseRepository.findAllFromProgram(basicEducationProgram);
     }
 }

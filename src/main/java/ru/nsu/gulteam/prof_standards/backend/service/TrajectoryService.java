@@ -102,4 +102,8 @@ public class TrajectoryService {
 
         return reachedStandards;
     }
+
+    boolean isThisTrajecory(List<FullCourseInfo> courses){
+        return getProfessionalStandardsReachedBy(new Trajectory(courses)).isEmpty();
+    }
 }
