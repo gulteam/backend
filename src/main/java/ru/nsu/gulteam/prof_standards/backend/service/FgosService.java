@@ -5,6 +5,8 @@ import org.springframework.stereotype.Service;
 import ru.nsu.gulteam.prof_standards.backend.domain.node.Competence;
 import ru.nsu.gulteam.prof_standards.backend.domain.node.Fgos;
 import ru.nsu.gulteam.prof_standards.backend.domain.node.FgosCourseRequirement;
+import ru.nsu.gulteam.prof_standards.backend.domain.repository.CompetenceRepository;
+import ru.nsu.gulteam.prof_standards.backend.domain.repository.FgosCourseRequirementRepository;
 import ru.nsu.gulteam.prof_standards.backend.domain.repository.FgosRepository;
 import ru.nsu.gulteam.prof_standards.backend.exception.IncorrectIdentifierException;
 
@@ -15,6 +17,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class FgosService {
     private final FgosRepository fgosRepository;
+    private final CompetenceRepository competenceRepository;
+    private final FgosCourseRequirementRepository fgosCourseRequirementRepository;
 
     public List<Fgos> getAll() {
         List<Fgos> result = new ArrayList<>();
@@ -62,13 +66,13 @@ public class FgosService {
 
     public void addCompetence(long fgosId) {
         Fgos fgos = fgosRepository.findOne(fgosId);
-        fgos.getRequireCompetence().add(new Competence());
+        fgos.getRequireCompetence().add(competenceRepository.save(new Competence()));
         fgosRepository.save(fgos);
     }
 
     public void addReuiredCourse(long fgosId) {
         Fgos fgos = fgosRepository.findOne(fgosId);
-        fgos.getRequireCourses().add(new FgosCourseRequirement());
+        fgos.getRequireCourses().add(fgosCourseRequirementRepository.save(new FgosCourseRequirement()));
         fgosRepository.save(fgos);
     }
 }
