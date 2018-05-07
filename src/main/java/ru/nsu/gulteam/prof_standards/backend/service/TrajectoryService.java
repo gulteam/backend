@@ -12,15 +12,15 @@ import java.util.stream.Collectors;
 @Service
 public class TrajectoryService {
     private CourseRepository courseRepository;
-    private TemplateCourseRepository templateCourseRepository;
+    private BlockRepository blockRepository;
     private ProfessionalStandardRepository professionalStandardRepository;
     private SkillsRepository skillsRepository;
     private KnowledgeRepository knowledgeRepository;
     private CourseService courseService;
 
-    public TrajectoryService(CourseRepository courseRepository, TemplateCourseRepository templateCourseRepository, ProfessionalStandardRepository professionalStandardRepository, SkillsRepository skillsRepository, KnowledgeRepository knowledgeRepository, CourseService courseService) {
+    public TrajectoryService(CourseRepository courseRepository, BlockRepository blockRepository, ProfessionalStandardRepository professionalStandardRepository, SkillsRepository skillsRepository, KnowledgeRepository knowledgeRepository, CourseService courseService) {
         this.courseRepository = courseRepository;
-        this.templateCourseRepository = templateCourseRepository;
+        this.blockRepository = blockRepository;
         this.professionalStandardRepository = professionalStandardRepository;
         this.skillsRepository = skillsRepository;
         this.knowledgeRepository = knowledgeRepository;
@@ -31,13 +31,13 @@ public class TrajectoryService {
         List<Trajectory> result = new ArrayList<>();
 
         List<Course> baseCourses = courseRepository.findAllBaseFromProgram(program);
-        List<TemplateCourse> templates = templateCourseRepository.findAllFromProgram(program);
+        List<Block> templates = blockRepository.findAllFromProgram(program);
         recursiveTrajectoryBuilding(result, baseCourses, new ArrayList<>(), templates, 0);
 
         return result;
     }
 
-    private void recursiveTrajectoryBuilding(List<Trajectory> result, List<Course> baseCourses, List<Course> variableCourses, List<TemplateCourse> templates, int depth) {
+    private void recursiveTrajectoryBuilding(List<Trajectory> result, List<Course> baseCourses, List<Course> variableCourses, List<Block> templates, int depth) {
         if(depth == templates.size()){
             List<Course> courses = new ArrayList<>(baseCourses);
             courses.addAll(variableCourses);
@@ -65,10 +65,10 @@ public class TrajectoryService {
             return;
         }
 
-        TemplateCourse templateCourse = templates.get(depth);
-        List<Course> implementations = courseRepository.getImplementationsOf(templateCourse);
+        Block block = templates.get(depth);
+        List<Course> courses = courseRepository.getAllCoursesFromBlock(block);
 
-        for(Course implementation : implementations){
+        for(Course implementation : courses){
             variableCourses.add(implementation);
             recursiveTrajectoryBuilding(result, baseCourses, variableCourses, templates, depth + 1);
             variableCourses.remove(implementation);

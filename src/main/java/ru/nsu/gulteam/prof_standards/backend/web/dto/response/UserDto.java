@@ -38,5 +38,15 @@ public class UserDto {
 
     private DepartmentDto department;
 
+    @NotNull
     private boolean canCreateProgram;
+
+    @NotNull
+    private boolean canEdit;
+
+    @NotNull
+    private boolean canChangeRole;
+
+    @NotNull
+    private boolean canChangeFacultyAndDepartment;
 }

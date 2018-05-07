@@ -87,7 +87,7 @@ public class UserService implements UserDetailsService {
     }
 
     public FullUserInfo getFullUserInfo(User user){
-        return new FullUserInfo(user, roleRepository.getRole(user), departmentRepository.getDepartment(user), facultyRepository.getFaculty(user));
+        return new FullUserInfo(user, roleRepository.getRole(user), departmentRepository.getDepartment(user), facultyRepository.getFaculty(user), false, false, false);
     }
 
     public User addNew(User user){

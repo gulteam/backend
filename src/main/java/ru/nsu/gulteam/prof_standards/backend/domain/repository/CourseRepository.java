@@ -10,22 +10,20 @@ import java.util.List;
 public interface CourseRepository extends GraphRepository<Course> {
     List<Course> findAll();
 
-    Course findById(long id);
-
     @Query("START p=node({program}) MATCH (p)-[:CONTAINS]->(c:COURSE) return c")
     List<Course> findAllFromProgram(@Param("program")BasicEducationProgram program);
 
     @Query("START p=node({program}), c=node({course}) CREATE (p)-[:CONTAINS]->(c) return c")
     Course connectToProgram(@Param("course")Course course, @Param("program")BasicEducationProgram program);
 
-    @Query("START t=node({templateCourse}), c=node({course}) CREATE (c)-[:IMPLEMENTS]->(t) return c")
-    Course connectToTemplate(@Param("course")Course course, @Param("templateCourse")TemplateCourse templateCourse);
+    @Query("START b=node({block}), c=node({course}) CREATE (c)<-[:CONTAINS]-(b) return c")
+    Course connectToBlock(@Param("course")Course course, @Param("block")Block block);
 
     @Query("START p=node({program}) MATCH (p)-[:CONTAINS]->(c:COURSE) WHERE NOT (c)-[:IMPLEMENTS]->() return c")
     List<Course> findAllBaseFromProgram(@Param("program")BasicEducationProgram program);
 
-    @Query("START t=node({templateCourse}) MATCH (c:COURSE)-[:IMPLEMENTS]->(t) return c")
-    List<Course> getImplementationsOf(@Param("templateCourse")TemplateCourse templateCourse);
+    @Query("START b=node({block}) MATCH (c:COURSE)<-[:CONTAINS]-(b) return c")
+    List<Course> getAllCoursesFromBlock(@Param("block")Block block);
 
     @Query("START c=node({course}) MATCH (c)-[d:DEVELOPS]->() delete d")
     void deleteAllDevelopRelations(@Param("course")Course course);
@@ -47,4 +45,10 @@ public interface CourseRepository extends GraphRepository<Course> {
 
     @Query("START c=node({course}) MATCH (c)-[:CREATED_BY]->(u) RETURN u")
     User getCreator(@Param("course")Course course);
+
+    @Query("START c=node({course}), u=node({user}) CREATE (c)-[:DEVELOPS_BY]->(u)")
+    void connectToDeveloper(@Param("course")Course course, @Param("user")User user);
+
+    @Query("START c=node({course}) MATCH (c)-[d:DEVELOPS_BY]->(u:USER) delete d")
+    void deleteAllDevelopsBy(@Param("course")Course course);
 }

@@ -16,4 +16,8 @@ public class FullUserInfo {
     private Role role;
     private Department department;
     private Faculty faculty;
+
+    private boolean canEdit;
+    private boolean canChangeRole;
+    private boolean canChangeFacultyAndDepartment;
 }

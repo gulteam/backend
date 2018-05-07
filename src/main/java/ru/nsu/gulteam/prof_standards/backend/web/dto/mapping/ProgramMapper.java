@@ -15,10 +15,12 @@ import ru.nsu.gulteam.prof_standards.backend.web.dto.response.CourseDto;
 @Mapper(componentModel = "spring",
         uses = {UserMapper.class,
                 FacultyMapper.class,
-                DepartmentMapper.class})
+                DepartmentMapper.class,
+                FgosMapper.class})
 public interface ProgramMapper {
     @Mappings({
             @Mapping(source = "program.createdBy", target = "createdBy"),
+            @Mapping(source = "program.fgos", target = "fgos"),
     })
     BasicEducationProgramDto toDto(FullBasicEducationProgramInfo program);
     BasicEducationProgram fromDto(BasicEducationProgramDto programDto);

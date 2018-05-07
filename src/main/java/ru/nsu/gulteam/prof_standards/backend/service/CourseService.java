@@ -1,6 +1,6 @@
 package ru.nsu.gulteam.prof_standards.backend.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.nsu.gulteam.prof_standards.backend.domain.node.*;
 import ru.nsu.gulteam.prof_standards.backend.domain.repository.*;
@@ -16,63 +16,66 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class CourseService {
-    private CourseRepository courseRepository;
-    private CourseMapper courseMapper;
-    private KnowledgeRepository knowledgeRepository;
-    private SkillsRepository skillsRepository;
-    private TemplateCourseRepository templateCourseRepository;
-    private BasicEducationProgramRepository programRepository;
-    private UserService userService;
-
-    @Autowired
-    public CourseService(CourseRepository courseRepository, CourseMapper courseMapper, KnowledgeRepository knowledgeRepository, SkillsRepository skillsRepository, TemplateCourseRepository templateCourseRepository, BasicEducationProgramRepository programRepository, UserService userService) {
-        this.courseRepository = courseRepository;
-        this.courseMapper = courseMapper;
-        this.knowledgeRepository = knowledgeRepository;
-        this.skillsRepository = skillsRepository;
-        this.templateCourseRepository = templateCourseRepository;
-        this.programRepository = programRepository;
-        this.userService = userService;
-    }
+    private final CourseRepository courseRepository;
+    private final CourseMapper courseMapper;
+    private final KnowledgeRepository knowledgeRepository;
+    private final SkillsRepository skillsRepository;
+    private final BlockRepository blockRepository;
+    private final BasicEducationProgramRepository programRepository;
+    private final UserService userService;
+    private final FacultyRepository facultyRepository;
+    private final DepartmentRepository departmentRepository;
+    private final UserRepository userRepository;
 
     public FullCourseInfo getFullCourseInfo(User user, Course course) {
         FullCourseInfo fullCourseInfo = new FullCourseInfo(course);
 
         fullCourseInfo.setDevelopKnowledge(knowledgeRepository.getDevelopsByCourse(course).stream().map(Knowledge::getId).collect(Collectors.toList()));
-        if(fullCourseInfo.getDevelopKnowledge() == null){
+        if (fullCourseInfo.getDevelopKnowledge() == null) {
             fullCourseInfo.setDevelopKnowledge(Collections.emptyList());
         }
 
         fullCourseInfo.setDevelopSkills(skillsRepository.getDevelopsByCourse(course).stream().map(Skills::getId).collect(Collectors.toList()));
-        if(fullCourseInfo.getDevelopSkills() == null){
+        if (fullCourseInfo.getDevelopSkills() == null) {
             fullCourseInfo.setDevelopSkills(Collections.emptyList());
         }
 
-        TemplateCourse templateCourse = templateCourseRepository.findTemplateOf(course);
-        if(templateCourse == null){
+        Block block = blockRepository.findBlockOf(course);
+        if (block == null) {
             fullCourseInfo.setImplementsTemplate(false);
-        }
-        else {
+        } else {
             fullCourseInfo.setImplementsTemplate(true);
-            fullCourseInfo.setTemplateCourse(templateCourse.getId());
+            fullCourseInfo.setTemplateCourse(block.getId());
         }
 
         fullCourseInfo.setProgramId(programRepository.getProgramOf(course).getId());
 
         fullCourseInfo.setPreviousCourses(courseRepository.getPreviousCourses(course).stream().map(Course::getId).collect(Collectors.toList()));
-        if(fullCourseInfo.getPreviousCourses() == null){
+        if (fullCourseInfo.getPreviousCourses() == null) {
             fullCourseInfo.setPreviousCourses(Collections.emptyList());
         }
 
         fullCourseInfo.setNextCourses(courseRepository.getNextCourses(course).stream().map(Course::getId).collect(Collectors.toList()));
-        if(fullCourseInfo.getNextCourses() == null){
+        if (fullCourseInfo.getNextCourses() == null) {
             fullCourseInfo.setNextCourses(Collections.emptyList());
         }
 
         fullCourseInfo.setCreatedBy(userService.getFullUserInfo(courseRepository.getCreator(course)));
 
         fullCourseInfo.setCanEdit(canEditCourse(user, course));
+        fullCourseInfo.setCanEditDevelopersList(canEditDevelopersList(user, course));
+
+        fullCourseInfo.setFaculty(facultyRepository.getFaculty(course));
+
+        if (fullCourseInfo.getFaculty() != null) {
+            fullCourseInfo.setDepartment(departmentRepository.getDepartment(course));
+        }
+
+        List<User> developers = userRepository.getDevelopersOf(course);
+        List<Long> developersIds = developers.stream().map(User::getId).collect(Collectors.toList());
+        fullCourseInfo.setDevelopedBy(developersIds);
 
         return fullCourseInfo;
     }
@@ -95,9 +98,9 @@ public class CourseService {
 
     public FullCourseInfo updateCourse(User user, int courseId, CourseDto courseDto) {
         List<Skills> developSkills = courseDto.getDevelopSkills().stream().map(id -> {
-            Skills skills = skillsRepository.findOne((long)id);
+            Skills skills = skillsRepository.findOne((long) id);
 
-            if(skills == null){
+            if (skills == null) {
                 throw new IncorrectIdentifierException("There is no skills with id: " + id);
             }
 
@@ -106,9 +109,9 @@ public class CourseService {
 
 
         List<Knowledge> developKnowledges = courseDto.getDevelopKnowledge().stream().map(id -> {
-            Knowledge knowledge = knowledgeRepository.findOne((long)id);
+            Knowledge knowledge = knowledgeRepository.findOne((long) id);
 
-            if(knowledge == null){
+            if (knowledge == null) {
                 throw new IncorrectIdentifierException("There is no knowledge with id: " + id);
             }
 
@@ -116,9 +119,9 @@ public class CourseService {
         }).collect(Collectors.toList());
 
         List<Course> previousCourses = courseDto.getPreviousCourses().stream().map(id -> {
-            Course course = courseRepository.findOne((long)id);
+            Course course = courseRepository.findOne((long) id);
 
-            if(course == null){
+            if (course == null) {
                 throw new IncorrectIdentifierException("There is no course with id: " + id);
             }
 
@@ -135,6 +138,32 @@ public class CourseService {
         courseRepository.removeAllBased(savedCourse);
         previousCourses.forEach(base -> courseRepository.setBasedOn(savedCourse, base));
 
+
+        Faculty faculty = null;
+        if (courseDto.getFaculty() != null &&
+                (faculty = facultyRepository.findOne(courseDto.getFaculty().getId())) == null) {
+            throw new IncorrectIdentifierException("There is no faculty with id: " + courseDto.getFaculty().getId());
+        }
+
+        Department department = null;
+        if (courseDto.getDepartment() != null &&
+                (department = departmentRepository.findOne(courseDto.getDepartment().getId())) == null) {
+            throw new IncorrectIdentifierException("There is no department with id: " + courseDto.getDepartment().getId());
+        }
+
+        facultyRepository.disconnectFromFaculty(course);
+        if (faculty != null) {
+            facultyRepository.connectToCourse(faculty, course);
+        }
+
+        departmentRepository.disconnectFromDepartment(course);
+        if (department != null) {
+            departmentRepository.connectToCourse(department, course);
+        }
+
+        courseRepository.deleteAllDevelopsBy(course);
+        courseDto.getDevelopedBy().forEach(id -> courseRepository.connectToDeveloper(course, userRepository.findOne((long) (int) id)));
+
         return getFullCourseInfo(user, savedCourse);
     }
 
@@ -142,8 +171,8 @@ public class CourseService {
         return true;
     }
 
-    public boolean canEditCourse(User user, Course course) {
-        if(user == null){
+    public boolean canEditDevelopersList(User user, Course course) {
+        if (user == null) {
             return false;
         }
 
@@ -152,8 +181,38 @@ public class CourseService {
         UserRole role = fullUserInfo.getRole().getName();
         Faculty courseFaculty = programRepository.getFacultyOf(programRepository.getProgramOf(course));
 
-        return role.equals(UserRole.ADMINISTRATOR) || role.equals(UserRole.DEAN_MEMBER) && fullUserInfo.getFaculty().equals(courseFaculty);
+
+        FullCourseInfo fullCourseInfo = getFullCourseInfo(course);
+        Faculty responsibleFaculty = fullCourseInfo.getFaculty();
+        Department responcibleDepartment = fullCourseInfo.getDepartment();
+
+        return role.equals(UserRole.ADMINISTRATOR)
+                || (role.equals(UserRole.DEAN_MEMBER) && fullUserInfo.getFaculty().equals(courseFaculty))
+                || role.equals(UserRole.DEAN_MEMBER) && fullUserInfo.getFaculty().equals(responsibleFaculty)
+                || role.equals(UserRole.DEPARTMENT_MEMBER) && fullUserInfo.getDepartment().equals(responcibleDepartment);
     }
+
+    public boolean canEditCourse(User user, Course course) {
+        if (user == null) {
+            return false;
+        }
+
+        FullUserInfo fullUserInfo = userService.getFullUserInfo(user);
+
+        UserRole role = fullUserInfo.getRole().getName();
+        Faculty courseFaculty = programRepository.getFacultyOf(programRepository.getProgramOf(course));
+
+        FullCourseInfo fullCourseInfo = getFullCourseInfo(course);
+        Faculty responsibleFaculty = fullCourseInfo.getFaculty();
+        Department responcibleDepartment = fullCourseInfo.getDepartment();
+
+        return fullCourseInfo.getDevelopedBy().contains(user.getId()) ||
+                role.equals(UserRole.ADMINISTRATOR) ||
+                (role.equals(UserRole.DEAN_MEMBER) && fullUserInfo.getFaculty().equals(courseFaculty)) ||
+                (role.equals(UserRole.DEAN_MEMBER) && fullUserInfo.getFaculty().equals(responsibleFaculty)) ||
+                (role.equals(UserRole.DEPARTMENT_MEMBER) && fullUserInfo.getDepartment().equals(responcibleDepartment));
+    }
+
 
     public FullCourseInfo getFullCourseInfo(Course course) {
         return getFullCourseInfo(null, course);

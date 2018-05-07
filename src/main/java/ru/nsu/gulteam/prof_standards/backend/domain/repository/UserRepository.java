@@ -3,6 +3,7 @@ package ru.nsu.gulteam.prof_standards.backend.domain.repository;
 import org.springframework.data.neo4j.annotation.Query;
 import org.springframework.data.neo4j.repository.GraphRepository;
 import org.springframework.data.repository.query.Param;
+import ru.nsu.gulteam.prof_standards.backend.domain.node.Course;
 import ru.nsu.gulteam.prof_standards.backend.domain.node.Role;
 import ru.nsu.gulteam.prof_standards.backend.domain.node.Token;
 import ru.nsu.gulteam.prof_standards.backend.domain.node.User;
@@ -25,4 +26,7 @@ public interface UserRepository extends GraphRepository<User> {
     List<User> findAllByRole(@Param("role")Role role);
 
     List<User> findAll();
+
+    @Query("START c=node({course}) MATCH (c)-[:DEVELOPS_BY]->(u) RETURN u")
+    List<User> getDevelopersOf(@Param("course")Course course);
 }

@@ -27,4 +27,10 @@ public interface BasicEducationProgramRepository extends GraphRepository<BasicEd
 
     @Query("START p=node({program}) MATCH (p)-[:BELONGS_TO]->(f) RETURN f")
     Faculty getFacultyOf(@Param("program")BasicEducationProgram program);
+
+    @Query("START t=node({block}) MATCH (p)-[:CONTAINS]->(t) RETURN p")
+    BasicEducationProgram getProgramOf(@Param("block")Block block);
+
+    @Query("START p=node({program}) MATCH (p)-[c:BASED_ON]->(f) DELETE c")
+    void clearBasedOn(@Param("program")BasicEducationProgram program);
 }

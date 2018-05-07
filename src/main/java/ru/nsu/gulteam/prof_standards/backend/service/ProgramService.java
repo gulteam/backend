@@ -1,12 +1,13 @@
 package ru.nsu.gulteam.prof_standards.backend.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.nsu.gulteam.prof_standards.backend.domain.node.BasicEducationProgram;
 import ru.nsu.gulteam.prof_standards.backend.domain.node.Course;
 import ru.nsu.gulteam.prof_standards.backend.domain.node.User;
 import ru.nsu.gulteam.prof_standards.backend.domain.repository.BasicEducationProgramRepository;
 import ru.nsu.gulteam.prof_standards.backend.domain.repository.CourseRepository;
+import ru.nsu.gulteam.prof_standards.backend.domain.repository.BlockRepository;
 import ru.nsu.gulteam.prof_standards.backend.domain.type.UserRole;
 import ru.nsu.gulteam.prof_standards.backend.entity.FullBasicEducationProgramInfo;
 import ru.nsu.gulteam.prof_standards.backend.entity.FullCourseInfo;
@@ -19,6 +20,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@AllArgsConstructor
 public class ProgramService {
     private BasicEducationProgramRepository programRepository;
     private CourseRepository courseRepository;
@@ -26,16 +28,8 @@ public class ProgramService {
     private ProgramMapper programMapper;
     private FacultyService facultyService;
     private UserService userService;
+    private BlockRepository blockRepository;
 
-    @Autowired
-    public ProgramService(BasicEducationProgramRepository programRepository, CourseRepository courseRepository, CourseService courseService, ProgramMapper programMapper, FacultyService facultyService, UserService userService) {
-        this.programRepository = programRepository;
-        this.courseRepository = courseRepository;
-        this.courseService = courseService;
-        this.programMapper = programMapper;
-        this.facultyService = facultyService;
-        this.userService = userService;
-    }
 
     public FullCourseInfo addCourseTo(User creator, long programId) {
         BasicEducationProgram program = programRepository.findOne(programId);
@@ -44,6 +38,10 @@ public class ProgramService {
             throw new IncorrectIdentifierException("There is no program with id: " + programId);
         }
 
+        return addCourseTo(creator, program);
+    }
+
+    public FullCourseInfo addCourseTo(User creator, BasicEducationProgram program) {
         Course course = courseRepository.save(new Course());
         courseRepository.connectToProgram(course, program);
         courseRepository.connectToCreator(course, creator);
@@ -62,7 +60,7 @@ public class ProgramService {
 
     public List<FullCourseInfo> getAllCourses(User user, BasicEducationProgram program) {
         List<Course> courses = courseRepository.findAllFromProgram(program);
-        return courses.stream().map(course->courseService.getFullCourseInfo(user, course)).collect(Collectors.toList());
+        return courses.stream().map(course -> courseService.getFullCourseInfo(user, course)).collect(Collectors.toList());
     }
 
     public List<BasicEducationProgram> getAllPrograms() {
@@ -97,6 +95,7 @@ public class ProgramService {
 
     public BasicEducationProgram updateProgram(int programId, BasicEducationProgramDto programDto) {
         BasicEducationProgram program = programMapper.fromDto(programDto);
+        programRepository.clearBasedOn(program);
         BasicEducationProgram savedProgram = programRepository.save(program, programId);
         return savedProgram;
     }
@@ -114,7 +113,7 @@ public class ProgramService {
     }
 
     public boolean canEditProgram(User user, BasicEducationProgram program) {
-        if(user == null){
+        if (user == null) {
             return false;
         }
 
@@ -125,12 +124,13 @@ public class ProgramService {
         return role.equals(UserRole.ADMINISTRATOR) || role.equals(UserRole.DEAN_MEMBER) && fullUserInfo.getFaculty().equals(programRepository.getFacultyOf(program));
     }
 
-    public FullBasicEducationProgramInfo getFullProgramInfo(User user, BasicEducationProgram program){
-        FullBasicEducationProgramInfo fullInfo = new FullBasicEducationProgramInfo((int)(long)program.getId(),
+    public FullBasicEducationProgramInfo getFullProgramInfo(User user, BasicEducationProgram program) {
+        FullBasicEducationProgramInfo fullInfo = new FullBasicEducationProgramInfo((int) (long) program.getId(),
                 program.getName(),
                 canEditProgram(user, program),
                 programRepository.getFacultyOf(program),
-                programRepository.getCreator(program));
+                programRepository.getCreator(program),
+                program.getFgos());
 
         return fullInfo;
     }

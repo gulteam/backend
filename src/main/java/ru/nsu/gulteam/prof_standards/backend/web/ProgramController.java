@@ -1,21 +1,22 @@
 package ru.nsu.gulteam.prof_standards.backend.web;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.nsu.gulteam.prof_standards.backend.domain.node.BasicEducationProgram;
+import ru.nsu.gulteam.prof_standards.backend.domain.node.Fgos;
 import ru.nsu.gulteam.prof_standards.backend.domain.node.User;
 import ru.nsu.gulteam.prof_standards.backend.entity.AnalyzeResult;
 import ru.nsu.gulteam.prof_standards.backend.entity.FullBasicEducationProgramInfo;
 import ru.nsu.gulteam.prof_standards.backend.entity.FullCourseInfo;
-import ru.nsu.gulteam.prof_standards.backend.service.AnalyzeService;
-import ru.nsu.gulteam.prof_standards.backend.service.ProgramService;
-import ru.nsu.gulteam.prof_standards.backend.service.SecurityService;
-import ru.nsu.gulteam.prof_standards.backend.service.UserService;
+import ru.nsu.gulteam.prof_standards.backend.entity.FullBlockInfo;
+import ru.nsu.gulteam.prof_standards.backend.service.*;
 import ru.nsu.gulteam.prof_standards.backend.web.dto.mapping.CourseMapper;
 import ru.nsu.gulteam.prof_standards.backend.web.dto.mapping.ProgramMapper;
+import ru.nsu.gulteam.prof_standards.backend.web.dto.mapping.BlockMapper;
 import ru.nsu.gulteam.prof_standards.backend.web.dto.response.BasicEducationProgramDto;
+import ru.nsu.gulteam.prof_standards.backend.web.dto.response.BlockDto;
 import ru.nsu.gulteam.prof_standards.backend.web.dto.response.Message;
 
 import java.util.List;
@@ -23,23 +24,17 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(path = "api/v1/program")
+@AllArgsConstructor
 public class ProgramController {
     private final SecurityService securityService;
     private final UserService userService;
-    private ProgramService programService;
-    private CourseMapper courseMapper;
-    private ProgramMapper programMapper;
-    private AnalyzeService analyzeService;
-
-    @Autowired
-    public ProgramController(ProgramService programService, CourseMapper courseMapper, ProgramMapper programMapper, AnalyzeService analyzeService, SecurityService securityService, UserService userService) {
-        this.programService = programService;
-        this.courseMapper = courseMapper;
-        this.programMapper = programMapper;
-        this.analyzeService = analyzeService;
-        this.securityService = securityService;
-        this.userService = userService;
-    }
+    private final ProgramService programService;
+    private final CourseMapper courseMapper;
+    private final ProgramMapper programMapper;
+    private final AnalyzeService analyzeService;
+    private final BlockMapper blockMapper;
+    private final BlockService blockService;
+    private final FgosService fgosService;
 
     @RequestMapping(path = "{programId}/addCourse", method = RequestMethod.GET)
     public ResponseEntity<?> addCourse(@PathVariable int programId) {
@@ -53,6 +48,18 @@ public class ProgramController {
         return ResponseEntity.ok(courseMapper.toDto(course));
     }
 
+    @RequestMapping(path = "{programId}/addTemplateCourse", method = RequestMethod.GET)
+    public ResponseEntity<?> addTemplateCourse(@PathVariable int programId) {
+        User user = userService.getUserEntity(securityService.getUserDetails());
+
+        if (user == null) {
+            throw new RuntimeException("Cann't create template course without user");
+        }
+
+        FullBlockInfo course = blockService.addBlockTo(user, programId);
+        return ResponseEntity.ok(blockMapper.toDto(course));
+    }
+
     @RequestMapping(path = "{programId}/allCourses", method = RequestMethod.GET)
     public ResponseEntity<?> getAllCourses(@PathVariable int programId) {
         User user = userService.getUserEntity(securityService.getUserDetails());
@@ -61,13 +68,23 @@ public class ProgramController {
         return ResponseEntity.ok(courses.stream().map(courseMapper::toDto).collect(Collectors.toList()));
     }
 
+    @RequestMapping(path = "{programId}/allTemplateCourses", method = RequestMethod.GET)
+    public ResponseEntity<?> getAllTemplateCourses(@PathVariable int programId) {
+        User user = userService.getUserEntity(securityService.getUserDetails());
+
+        List<FullBlockInfo> blocks = blockService.getAllTemplateCourses(user, programId);
+        List<BlockDto> blockDtos = blocks.stream().map(blockMapper::toDto).collect(Collectors.toList());
+        return ResponseEntity.ok(blockDtos);
+    }
+
     @RequestMapping(path = "/allPrograms", method = RequestMethod.GET)
     public ResponseEntity<?> allPrograms() {
         User user = userService.getUserEntity(securityService.getUserDetails());
 
         List<BasicEducationProgram> programs = programService.getAllPrograms();
+        List<BasicEducationProgramDto> programDtos = programs.stream().map(program -> programService.getFullProgramInfo(user, program)).map(programMapper::toDto).collect(Collectors.toList());
 
-        return ResponseEntity.ok(programs.stream().map(program -> programService.getFullProgramInfo(user, program)).map(programMapper::toDto).collect(Collectors.toList()));
+        return ResponseEntity.ok(programDtos);
     }
 
     @RequestMapping(path = "{programId}", method = RequestMethod.GET)
