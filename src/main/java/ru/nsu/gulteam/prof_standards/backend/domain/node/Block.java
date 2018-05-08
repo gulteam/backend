@@ -11,8 +11,8 @@ import ru.nsu.gulteam.prof_standards.backend.domain.type.AttestationForm;
 @Data
 @NoArgsConstructor
 @EqualsAndHashCode(of = "id")
-@NodeEntity(label = "TEMPLATE_COURSE")
-public class TemplateCourse {
+@NodeEntity(label = "BLOCK")
+public class Block {
     @GraphId
     @Property(name = "ID")
     private Long id;
@@ -26,7 +26,7 @@ public class TemplateCourse {
     @Property(name = "ATTESTATION_FORM")
     private AttestationForm attestationForm;
 
-    public TemplateCourse(int amount, int semester, AttestationForm attestationForm) {
+    public Block(int amount, int semester, AttestationForm attestationForm) {
         this.amount = amount;
         this.semester = semester;
         this.attestationForm = attestationForm;

@@ -1,5 +1,6 @@
 package ru.nsu.gulteam.prof_standards.backend.service;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import ru.nsu.gulteam.prof_standards.backend.domain.node.*;
@@ -13,27 +14,17 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 @Service
+@RequiredArgsConstructor
 public class TrajectoryService {
-    private CourseRepository courseRepository;
-    private TemplateCourseRepository templateCourseRepository;
-    private ProfessionalStandardRepository professionalStandardRepository;
-    private SkillsRepository skillsRepository;
-    private KnowledgeRepository knowledgeRepository;
-    private CourseService courseService;
-    private TrajectoryRepository trajectoryRepository;
-    private TrajectoryCourseRepository trajectoryCourseRepository;
-
-    public TrajectoryService(CourseRepository courseRepository, TemplateCourseRepository templateCourseRepository, ProfessionalStandardRepository professionalStandardRepository, SkillsRepository skillsRepository, KnowledgeRepository knowledgeRepository, CourseService courseService, TrajectoryRepository trajectoryRepository, TrajectoryCourseRepository trajectoryCourseRepository) {
-        this.courseRepository = courseRepository;
-        this.templateCourseRepository = templateCourseRepository;
-        this.professionalStandardRepository = professionalStandardRepository;
-        this.skillsRepository = skillsRepository;
-        this.knowledgeRepository = knowledgeRepository;
-        this.courseService = courseService;
-        this.trajectoryRepository = trajectoryRepository;
-        this.trajectoryCourseRepository = trajectoryCourseRepository;
-    }
-
+    private final CourseRepository courseRepository;
+    private final BlockRepository blockRepository;
+    private final ProfessionalStandardRepository professionalStandardRepository;
+    private final SkillsRepository skillsRepository;
+    private final KnowledgeRepository knowledgeRepository;
+    private final CourseService courseService;
+    private final TrajectoryRepository trajectoryRepository;
+    private final TrajectoryCourseRepository trajectoryCourseRepository;
+    
     public void updateTrajectories(BasicEducationProgram program) {
         List<Trajectory> trajectories = generateAllTrajectories(program);
         checkTrajectory(trajectories);
@@ -64,11 +55,11 @@ public class TrajectoryService {
         }
     }
 
-    private List<Trajectory> generateAllTrajectories(BasicEducationProgram program) {
+    public List<Trajectory> generateAllTrajectories(BasicEducationProgram program) {
         List<Trajectory> result = new ArrayList<>();
 
         List<Course> baseCourses = courseRepository.findAllBaseFromProgram(program);
-        List<TemplateCourse> templates = templateCourseRepository.findAllFromProgram(program);
+        List<Block> templates = blockRepository.findAllFromProgram(program);
 
         List<Course> courseKit = new ArrayList<>();
         Map<Integer, Integer> templateIndexes = new HashMap<>();
@@ -79,14 +70,14 @@ public class TrajectoryService {
         return result;
     }
 
-    private void recursiveTrajectoryBuilding(List<Trajectory> result, List<Course> courses, List<TemplateCourse> templates, Map<Integer, Integer> templateIndexes, int depth) {
+    private void recursiveTrajectoryBuilding(List<Trajectory> result, List<Course> courses, List<Block> templates, Map<Integer, Integer> templateIndexes, int depth) {
         if(depth == templates.size()){
             result.add(new Trajectory(courses.stream().map(courseService::getFullCourseInfo).collect(Collectors.toList())));
             return;
         }
 
-        TemplateCourse templateCourse = templates.get(depth);
-        List<Course> implementations = courseRepository.getImplementationsOf(templateCourse);
+        Block block = templates.get(depth);
+        List<Course> implementations = courseRepository.getImplementationsOf(block);
         int templateIndex = templateIndexes.get(depth);
 
         for(Course implementation : implementations) {
@@ -96,7 +87,7 @@ public class TrajectoryService {
         }
     }
 
-    private List<ProfessionalStandard> getProfessionalStandardsReachedBy(Trajectory trajectory) {
+    public List<ProfessionalStandard> getProfessionalStandardsReachedBy(Trajectory trajectory) {
         List<ProfessionalStandard> reachedStandards = new ArrayList<>();
 
         for(ProfessionalStandard professionalStandard : professionalStandardRepository.findAll()){
@@ -131,7 +122,7 @@ public class TrajectoryService {
         }
     }
 
-    private void fillCourseKit(List<Course> courseKit, Map<Integer, Integer> templateIndexes, List<Course> basic, List<TemplateCourse> templates) {
+    private void fillCourseKit(List<Course> courseKit, Map<Integer, Integer> templateIndexes, List<Course> basic, List<Block> templates) {
         courseKit.clear();
         templateIndexes.clear();
 
@@ -154,14 +145,14 @@ public class TrajectoryService {
 
     private static class Holder implements Comparable<Holder> {
         Course course;
-        TemplateCourse template;
+        Block template;
         int templateIndex;
 
         public Holder(Course course) {
             this.course = course;
         }
 
-        public Holder(TemplateCourse template, int templateIndex) {
+        public Holder(Block template, int templateIndex) {
             this.template = template;
             this.templateIndex = templateIndex;
         }
@@ -188,5 +179,9 @@ public class TrajectoryService {
 
             return 0;
         }
+    }
+
+    boolean isThisTrajecory(List<FullCourseInfo> courses){
+        return getProfessionalStandardsReachedBy(new Trajectory(courses)).isEmpty();
     }
 }

@@ -26,13 +26,26 @@ public class CourseDto {
     private List<Integer> nextCourses;
     @NotNull
     private boolean implementsTemplate;
-    private int templateCourse;
     @NotNull
     private List<Integer> developCompetence;
+
+    private int templateCourse;
     @NotNull
     private List<Integer> developSkills;
     @NotNull
     private List<Integer> developKnowledge;
     @NotNull
     private int programId;
+    @NotNull
+    private UserDto createdBy;
+    @NotNull
+    private boolean canEdit;
+    @NotNull
+    private DepartmentDto department;
+    @NotNull
+    private FacultyDto faculty;
+    @NotNull
+    private List<Integer> developedBy;
+    @NotNull
+    private boolean canEditDevelopersList;
 }

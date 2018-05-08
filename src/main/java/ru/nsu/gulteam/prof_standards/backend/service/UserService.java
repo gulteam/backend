@@ -72,17 +72,22 @@ public class UserService implements UserDetailsService {
 
 
     public User getUserEntity(org.springframework.security.core.userdetails.User userDetails) {
+        if(userDetails == null){
+            return null;
+        }
+
         User user = userRepository.findByLoginIgnoreCase(userDetails.getUsername());
 
         if(user == null){
-            throw new UsernameNotFoundException("There is no username with same name");
+            //throw new UsernameNotFoundException("There is no username with same name");
+            return null;
         }
 
         return user;
     }
 
     public FullUserInfo getFullUserInfo(User user){
-        return new FullUserInfo(user, roleRepository.getRole(user), departmentRepository.getDepartment(user), facultyRepository.getFaculty(user));
+        return new FullUserInfo(user, roleRepository.getRole(user), departmentRepository.getDepartment(user), facultyRepository.getFaculty(user), false, false, false);
     }
 
     public User addNew(User user){

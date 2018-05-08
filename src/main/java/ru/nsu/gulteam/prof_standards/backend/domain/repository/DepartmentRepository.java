@@ -24,4 +24,13 @@ public interface DepartmentRepository extends GraphRepository<Department> {
 
     @Query("START d=node({department}), u=node({user}) CREATE (d)-[:CONTAINS]->(u) RETURN d")
     Department connectToUser(@Param("department") Department department, @Param("user")User user);
+
+    @Query("START d=node({department}), c=node({course}) CREATE (d)-[:RESPONSIBLE_FOR]->(c) RETURN d")
+    Faculty connectToCourse(@Param("department") Department department, @Param("course")Course course);
+
+    @Query("START c=node({course}) MATCH (c)<-[:RESPONSIBLE_FOR]-(d:DEPARTMENT) RETURN d")
+    Department getDepartment(@Param("course")Course course);
+
+    @Query("START c=node({course}) MATCH (c)<-[r:RESPONSIBLE_FOR]-(d:DEPARTMENT) DELETE r")
+    void disconnectFromDepartment(@Param("course")Course course);
 }

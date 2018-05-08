@@ -39,7 +39,7 @@ public class SecurityService {
     public org.springframework.security.core.userdetails.User getUserDetails() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
-            throw new NotAuthorizedException("Not authorized");
+            return null;
         }
 
         return (org.springframework.security.core.userdetails.User) authentication.getPrincipal();
