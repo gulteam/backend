@@ -13,10 +13,10 @@ import ru.nsu.gulteam.prof_standards.backend.web.dto.response.BlockDto;
                 DepartmentMapper.class})
 public interface BlockMapper {
     @Mappings({
-            @Mapping(source = "course.id", target = "id"),
-            @Mapping(source = "course.amount", target = "amount"),
-            @Mapping(source = "course.semester", target = "semester"),
-            @Mapping(source = "course.attestationForm", target = "attestationForm"),
+            @Mapping(source = "block.id", target = "id"),
+            @Mapping(source = "block.amount", target = "amount"),
+            @Mapping(source = "block.semester", target = "semester"),
+            @Mapping(source = "block.attestationForm", target = "attestationForm"),
             @Mapping(source = "canEdit", target = "canEdit"),
     })
     BlockDto toDto(FullBlockInfo course);

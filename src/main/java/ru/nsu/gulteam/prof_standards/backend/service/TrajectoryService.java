@@ -180,4 +180,8 @@ public class TrajectoryService {
             return 0;
         }
     }
+
+    boolean isThisTrajecory(List<FullCourseInfo> courses){
+        return getProfessionalStandardsReachedBy(new Trajectory(courses)).isEmpty();
+    }
 }

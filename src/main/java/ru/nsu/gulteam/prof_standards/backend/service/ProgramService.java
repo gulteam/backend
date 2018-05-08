@@ -3,11 +3,9 @@ package ru.nsu.gulteam.prof_standards.backend.service;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.nsu.gulteam.prof_standards.backend.domain.node.*;
-import ru.nsu.gulteam.prof_standards.backend.domain.node.TemplateCourse;
 import ru.nsu.gulteam.prof_standards.backend.domain.repository.BasicEducationProgramRepository;
-import ru.nsu.gulteam.prof_standards.backend.domain.repository.CourseRepository;
 import ru.nsu.gulteam.prof_standards.backend.domain.repository.BlockRepository;
-import ru.nsu.gulteam.prof_standards.backend.domain.repository.TemplateCourseRepository;
+import ru.nsu.gulteam.prof_standards.backend.domain.repository.CourseRepository;
 import ru.nsu.gulteam.prof_standards.backend.domain.type.UserRole;
 import ru.nsu.gulteam.prof_standards.backend.entity.FullBasicEducationProgramInfo;
 import ru.nsu.gulteam.prof_standards.backend.entity.FullCourseInfo;
@@ -127,14 +125,12 @@ public class ProgramService {
     }
 
     public FullBasicEducationProgramInfo getFullProgramInfo(User user, BasicEducationProgram program) {
-        FullBasicEducationProgramInfo fullInfo = new FullBasicEducationProgramInfo((int) (long) program.getId(),
+        return new FullBasicEducationProgramInfo((int) (long) program.getId(),
                 program.getName(),
                 canEditProgram(user, program),
                 programRepository.getFacultyOf(program),
                 programRepository.getCreator(program),
                 program.getFgos());
-
-        return fullInfo;
     }
 
     public List<Competence> getAllRequiredCompetences(User user, long programId) {

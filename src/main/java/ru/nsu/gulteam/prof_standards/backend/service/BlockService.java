@@ -31,7 +31,7 @@ public class BlockService {
 
     public FullBlockInfo getFullBlockInfo(User user, Block block) {
         FullBlockInfo fullBlockInfo = new FullBlockInfo();
-        fullBlockInfo.setCourse(block);
+        fullBlockInfo.setBlock(block);
         fullBlockInfo.setCanEdit(Block(user, block));
         return fullBlockInfo;
     }

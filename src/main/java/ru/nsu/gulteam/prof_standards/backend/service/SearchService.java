@@ -2,16 +2,14 @@ package ru.nsu.gulteam.prof_standards.backend.service;
 
 import javafx.util.Pair;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.nsu.gulteam.prof_standards.backend.domain.node.BasicEducationProgram;
+import ru.nsu.gulteam.prof_standards.backend.domain.node.Block;
 import ru.nsu.gulteam.prof_standards.backend.domain.node.Course;
 import ru.nsu.gulteam.prof_standards.backend.domain.node.ProfessionalStandard;
-import ru.nsu.gulteam.prof_standards.backend.domain.node.TemplateCourse;
 import ru.nsu.gulteam.prof_standards.backend.domain.repository.CourseRepository;
+import ru.nsu.gulteam.prof_standards.backend.entity.FullBlockInfo;
 import ru.nsu.gulteam.prof_standards.backend.entity.FullCourseInfo;
 import ru.nsu.gulteam.prof_standards.backend.entity.FullSearchRequest;
-import ru.nsu.gulteam.prof_standards.backend.entity.FullTemplateCourseInfo;
 import ru.nsu.gulteam.prof_standards.backend.entity.Trajectory;
 
 import java.util.*;
@@ -31,10 +29,6 @@ public class SearchService {
 
 
     private class Searcher {
-        private List<FullCourseInfo> currentTrajectory = new ArrayList<>();
-        private List<FullTemplateCourseInfo> sortedBlocks = new ArrayList<>();
-        private int[] maxSelectedCourseFromBlock = new int[0];
-
         final Set<Pair<Double, Trajectory>> trajectories = new TreeSet<>((a, b) -> {
             double aWeight = a.getKey();
             double bWeigth = b.getKey();
@@ -44,7 +38,9 @@ public class SearchService {
             }
             return -Double.compare(a.getKey(), b.getKey());
         });
-
+        private List<FullCourseInfo> currentTrajectory = new ArrayList<>();
+        private List<FullBlockInfo> sortedBlocks = new ArrayList<>();
+        private int[] maxSelectedCourseFromBlock = new int[0];
         private int fixedBlock = 0;
 
         private Map<Long, FullCourseInfo> coursesById = new TreeMap<>();
@@ -66,10 +62,10 @@ public class SearchService {
 
             changeRating(fullSearchRequest);
 
-            Map<Long, FullTemplateCourseInfo> blocks = new TreeMap<>();
-            List<TemplateCourse> templateCourses = programService.getAllTemplateCourses(null, fullSearchRequest.getBasicEducationProgram());
-            for (TemplateCourse templateCourse : templateCourses) {
-                blocks.put(templateCourse.getId(), new FullTemplateCourseInfo(templateCourse, new ArrayList<>()));
+            Map<Long, FullBlockInfo> blocksById = new TreeMap<>();
+            List<Block> blocks = programService.getAllTemplateCourses(null, fullSearchRequest.getBasicEducationProgram());
+            for (Block block : blocks) {
+                blocksById.put(block.getId(), new FullBlockInfo(block, new ArrayList<>()));
             }
 
             for (FullCourseInfo courseInfo : allCourses) {
@@ -78,18 +74,18 @@ public class SearchService {
                     continue;
                 }
 
-                blocks.get(courseInfo.getTemplateCourse()).getCourses().add(courseInfo);
+                blocksById.get(courseInfo.getTemplateCourse()).getCourses().add(courseInfo);
             }
 
-            sortCoursesInBlocks(blocks.values());
+            sortCoursesInBlocks(blocksById.values());
 
-            sortedBlocks = new ArrayList<>(blocks.values());
+            sortedBlocks = new ArrayList<>(blocksById.values());
             sortedBlocks.sort((a, b) -> {
-                int aSemester = a.getTemplateCourse().getSemester();
-                int bSemester = b.getTemplateCourse().getSemester();
+                int aSemester = a.getBlock().getSemester();
+                int bSemester = b.getBlock().getSemester();
 
                 if (aSemester == bSemester) {
-                    return (int) (a.getTemplateCourse().getId() - b.getTemplateCourse().getId());
+                    return (int) (a.getBlock().getId() - b.getBlock().getId());
                 }
 
                 return aSemester - bSemester;
@@ -97,11 +93,11 @@ public class SearchService {
 
             // User info
             int currentStudentSemester = 0;
-            Map<TemplateCourse, Course> coursesThatUserAlreadyKnow = new TreeMap<>();
+            Map<Block, Course> coursesThatUserAlreadyKnow = new TreeMap<>();
 
             int fromBlock = 0;
             for (int i = 0; i < sortedBlocks.size(); ++i) {
-                if (sortedBlocks.get(i).getTemplateCourse().getSemester() > currentStudentSemester) {
+                if (sortedBlocks.get(i).getBlock().getSemester() > currentStudentSemester) {
                     fromBlock = i;
                     break;
                 }
@@ -184,7 +180,7 @@ public class SearchService {
                 return;
             }
 
-            FullTemplateCourseInfo block = sortedBlocks.get(currentBlock);
+            FullBlockInfo block = sortedBlocks.get(currentBlock);
 
             int from = 0;
             if (currentBlock == fixedBlock) {
@@ -199,8 +195,8 @@ public class SearchService {
             }
         }
 
-        private void sortCoursesInBlocks(Collection<FullTemplateCourseInfo> blocks) {
-            for (FullTemplateCourseInfo block : blocks) {
+        private void sortCoursesInBlocks(Collection<FullBlockInfo> blocks) {
+            for (FullBlockInfo block : blocks) {
                 block.getCourses().sort((a, b) -> -((int) a.getCourse().getRating() - (int) b.getCourse().getRating()));
             }
         }
