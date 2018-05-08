@@ -32,6 +32,9 @@ public class Course implements Comparable<Course> {
     @Property(name = "APPROVED")
     private boolean approved = false;
 
+    @Property(name = "RATING")
+    private double rating = 5;//от 0 до 10 для подбора траекторий
+
     public Course(int amount, int semester, AttestationForm attestationForm, String name) {
         this.amount = amount;
         this.semester = semester;
@@ -39,8 +42,13 @@ public class Course implements Comparable<Course> {
         this.name = name;
     }
 
+    public Course(int amount, int semester, AttestationForm attestationForm, String name, double rating) {
+        this(amount, semester, attestationForm, name);
+        this.rating = rating;
+    }
+
     @Override
     public int compareTo(Course o) {
-        return (int)(id - o.id);
+        return (int) (id - o.id);
     }
 }

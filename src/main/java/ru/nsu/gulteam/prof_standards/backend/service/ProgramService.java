@@ -2,13 +2,12 @@ package ru.nsu.gulteam.prof_standards.backend.service;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.nsu.gulteam.prof_standards.backend.domain.node.BasicEducationProgram;
-import ru.nsu.gulteam.prof_standards.backend.domain.node.Competence;
-import ru.nsu.gulteam.prof_standards.backend.domain.node.Course;
-import ru.nsu.gulteam.prof_standards.backend.domain.node.User;
+import ru.nsu.gulteam.prof_standards.backend.domain.node.*;
+import ru.nsu.gulteam.prof_standards.backend.domain.node.TemplateCourse;
 import ru.nsu.gulteam.prof_standards.backend.domain.repository.BasicEducationProgramRepository;
 import ru.nsu.gulteam.prof_standards.backend.domain.repository.CourseRepository;
 import ru.nsu.gulteam.prof_standards.backend.domain.repository.BlockRepository;
+import ru.nsu.gulteam.prof_standards.backend.domain.repository.TemplateCourseRepository;
 import ru.nsu.gulteam.prof_standards.backend.domain.type.UserRole;
 import ru.nsu.gulteam.prof_standards.backend.entity.FullBasicEducationProgramInfo;
 import ru.nsu.gulteam.prof_standards.backend.entity.FullCourseInfo;
@@ -140,5 +139,9 @@ public class ProgramService {
 
     public List<Competence> getAllRequiredCompetences(User user, long programId) {
         return programRepository.findRequiredCompetences(programRepository.findOne(programId));
+    }
+
+    public List<Block> getAllTemplateCourses(User user, BasicEducationProgram basicEducationProgram) {
+        return blockRepository.findAllFromProgram(basicEducationProgram);
     }
 }

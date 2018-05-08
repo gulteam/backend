@@ -225,10 +225,10 @@ public class DummyDatabaseFiller {
         basicEducationProgramRepository.connectToCreator(educationProgram, fitDean);
 
         // Courses
-        Course programming = courseRepository.save(new Course(36, 1, AttestationForm.EXAM, "Programming C#"));
-        Course physics = courseRepository.save(new Course(36, 1, AttestationForm.EXAM, "Thermodynamics"));
-        Course philosophy = courseRepository.save(new Course(36, 1, AttestationForm.DIFFERENTATED_CREDIT, "Философия"));
-        Course english = courseRepository.save(new Course(36, 3, AttestationForm.EXAM, "English language"));
+        Course philosophy = courseRepository.save(new Course(36, 1, AttestationForm.DIFFERENTATED_CREDIT, "Философия", 4));
+        Course programming = courseRepository.save(new Course(36, 1, AttestationForm.EXAM, "Programming C#", 9));
+        Course physics = courseRepository.save(new Course(36, 1, AttestationForm.EXAM, "Thermodynamics", 7));
+        Course english = courseRepository.save(new Course(36, 3, AttestationForm.EXAM, "English language", 8));
         programming = courseRepository.connectToProgram(programming, educationProgram);
         physics = courseRepository.connectToProgram(physics, educationProgram);
         english = courseRepository.connectToProgram(english, educationProgram);
@@ -241,9 +241,9 @@ public class DummyDatabaseFiller {
         t3 = blockRepository.connectToProgram(t3, educationProgram);
 
         // Courses, that based on templates
-        Course createServer = courseRepository.save(new Course(36, 2, AttestationForm.EXAM, "Create web server"));
-        Course writeWebApplication = courseRepository.save(new Course(36, 2, AttestationForm.EXAM, "Write web application"));
-        Course createKeyboard = courseRepository.save(new Course(36, 2, AttestationForm.EXAM, "Create keyboard"));
+        Course createServer = courseRepository.save(new Course(36, 2, AttestationForm.EXAM, "Create web server", 9));
+        Course writeWebApplication = courseRepository.save(new Course(36, 2, AttestationForm.EXAM, "Write web application", 10));
+        Course createKeyboard = courseRepository.save(new Course(36, 2, AttestationForm.EXAM, "Create keyboard", 8));
         createServer = courseRepository.connectToBlock(createServer, t2);
         createServer = courseRepository.connectToProgram(createServer, educationProgram);
         writeWebApplication = courseRepository.connectToBlock(writeWebApplication, t2);
@@ -251,8 +251,8 @@ public class DummyDatabaseFiller {
         createKeyboard = courseRepository.connectToBlock(createKeyboard, t2);
         createKeyboard = courseRepository.connectToProgram(createKeyboard, educationProgram);
 
-        Course databaseCreating = courseRepository.save(new Course(36, 3, AttestationForm.EXAM, "Database creating"));
-        Course turboLearning = courseRepository.save(new Course(36, 3, AttestationForm.EXAM, "Turbo learning system"));
+        Course databaseCreating = courseRepository.save(new Course(36, 3, AttestationForm.EXAM, "Database creating", 10));
+        Course turboLearning = courseRepository.save(new Course(36, 3, AttestationForm.EXAM, "Turbo learning system", 9));
         databaseCreating = courseRepository.connectToBlock(databaseCreating, t3);
         databaseCreating = courseRepository.connectToProgram(databaseCreating, educationProgram);
         turboLearning = courseRepository.connectToBlock(turboLearning, t3);
