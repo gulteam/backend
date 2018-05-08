@@ -30,6 +30,7 @@ public class ProgramService {
     private FacultyService facultyService;
     private UserService userService;
     private BlockRepository blockRepository;
+    private TrajectoryService trajectoryService;
 
 
     public FullCourseInfo addCourseTo(User creator, long programId) {
@@ -90,7 +91,7 @@ public class ProgramService {
 
         programRepository.connectToCreator(program, creator);
         programRepository.connectToFaculty(program, userService.getFullUserInfo(creator).getFaculty());
-
+        trajectoryService.updateTrajectories(program);
         return program;
     }
 
@@ -98,6 +99,7 @@ public class ProgramService {
         BasicEducationProgram program = programMapper.fromDto(programDto);
         programRepository.clearBasedOn(program);
         BasicEducationProgram savedProgram = programRepository.save(program, programId);
+        trajectoryService.updateTrajectories(program); // TODO batalin: async ?
         return savedProgram;
     }
 

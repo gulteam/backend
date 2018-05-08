@@ -8,6 +8,8 @@ import ru.nsu.gulteam.prof_standards.backend.domain.node.*;
 import ru.nsu.gulteam.prof_standards.backend.domain.repository.*;
 import ru.nsu.gulteam.prof_standards.backend.domain.type.AttestationForm;
 import ru.nsu.gulteam.prof_standards.backend.domain.type.UserRole;
+import ru.nsu.gulteam.prof_standards.backend.service.TrajectoryService;
+import ru.nsu.gulteam.prof_standards.backend.service.TrajectoryService;
 import ru.nsu.gulteam.prof_standards.backend.service.UserService;
 
 import javax.annotation.PostConstruct;
@@ -35,6 +37,7 @@ public class DummyDatabaseFiller {
     private FgosRepository fgosRepository;
     private FgosCourseRequirementRepository fgosCourseRequirementRepository;
     private CompetenceRepository competenceRepository;
+    private TrajectoryService trajectoryService;
 
     @PostConstruct
     public void fillDatabase() {
@@ -295,5 +298,7 @@ public class DummyDatabaseFiller {
         courseRepository.findAll().forEach(course->{
             courseRepository.connectToCreator(course, users.get(3)); // With me c:
         });
+
+        trajectoryService.updateTrajectories(educationProgram);
     }
 }
