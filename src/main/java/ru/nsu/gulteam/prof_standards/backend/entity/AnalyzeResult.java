@@ -1,22 +1,16 @@
 package ru.nsu.gulteam.prof_standards.backend.entity;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
 import java.util.List;
 
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class AnalyzeResult {
-    private List<String> errorMessages;
-
-    public AnalyzeResult() {
-    }
-
-    public List<String> getErrorMessages() {
-        return errorMessages;
-    }
-
-    public void setErrorMessages(List<String> errorMessages) {
-        this.errorMessages = errorMessages;
-    }
-
-    public AnalyzeResult(List<String> errorMessages) {
-        this.errorMessages = errorMessages;
-    }
+    @Getter
+    private List<AnalyzeMessage> messages;
 }

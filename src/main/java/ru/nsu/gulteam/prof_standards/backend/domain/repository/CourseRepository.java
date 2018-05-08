@@ -19,7 +19,7 @@ public interface CourseRepository extends GraphRepository<Course> {
     @Query("START b=node({block}), c=node({course}) CREATE (c)<-[:CONTAINS]-(b) return c")
     Course connectToBlock(@Param("course") Course course, @Param("block") Block block);
 
-    @Query("START p=node({program}) MATCH (p)-[:CONTAINS]->(c:COURSE) WHERE NOT (c)-[:IMPLEMENTS]->() return c")
+    @Query("START p=node({program}) MATCH (p)-[:CONTAINS]->(c:COURSE) WHERE NOT (c)<-[:CONTAINS]->(:BLOCK) return c")
     List<Course> findAllBaseFromProgram(@Param("program") BasicEducationProgram program);
 
     @Query("START b=node({block}) MATCH (c:COURSE)<-[:CONTAINS]-(b) return c")
@@ -58,6 +58,6 @@ public interface CourseRepository extends GraphRepository<Course> {
     @Query("START c=node({course}) MATCH (c)-[d:DEVELOPS]->(r:COMPETENCE) return r")
     List<Competence> getDevelopCompetences(@Param("course") Course course);
 
-    @Query("START b=node({block}) MATCH (c:COURSE)-[:IMPLEMENTS]->(b) return c")
+    @Query("START b=node({block}) MATCH (c:COURSE)<-[:CONTAINS]-(b) return c")
     List<Course> getImplementationsOf(@Param("block")Block block);
 }
