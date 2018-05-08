@@ -28,6 +28,7 @@ public class CourseService {
     private final FacultyRepository facultyRepository;
     private final DepartmentRepository departmentRepository;
     private final UserRepository userRepository;
+    private final CompetenceRepository competenceRepository;
 
     public FullCourseInfo getFullCourseInfo(User user, Course course) {
         FullCourseInfo fullCourseInfo = new FullCourseInfo(course);
@@ -76,6 +77,8 @@ public class CourseService {
         List<User> developers = userRepository.getDevelopersOf(course);
         List<Long> developersIds = developers.stream().map(User::getId).collect(Collectors.toList());
         fullCourseInfo.setDevelopedBy(developersIds);
+
+        fullCourseInfo.setDevelopCompetence(courseRepository.getDevelopCompetences(course).stream().map(c -> (int) (long) c.getId()).collect(Collectors.toList()));
 
         return fullCourseInfo;
     }
@@ -128,6 +131,16 @@ public class CourseService {
             return course;
         }).collect(Collectors.toList());
 
+        List<Competence> developCompetence = courseDto.getDevelopCompetence().stream().map(id -> {
+            Competence competence = competenceRepository.findOne((long) id);
+
+            if (competence == null) {
+                throw new IncorrectIdentifierException("There is no competence with id: " + id);
+            }
+
+            return competence;
+        }).collect(Collectors.toList());
+
         Course course = courseMapper.fromDto(courseDto);
         Course savedCourse = courseRepository.save(course, courseId);
 
@@ -138,6 +151,7 @@ public class CourseService {
         courseRepository.removeAllBased(savedCourse);
         previousCourses.forEach(base -> courseRepository.setBasedOn(savedCourse, base));
 
+        developCompetence.forEach(competence -> competenceRepository.connectToCourse(competence, savedCourse));
 
         Faculty faculty = null;
         if (courseDto.getFaculty() != null &&

@@ -51,4 +51,7 @@ public interface CourseRepository extends GraphRepository<Course> {
 
     @Query("START c=node({course}) MATCH (c)-[d:DEVELOPS_BY]->(u:USER) delete d")
     void deleteAllDevelopsBy(@Param("course")Course course);
+
+    @Query("START c=node({course}) MATCH (c)-[d:DEVELOPS]->(r:COMPETENCE) return r")
+    List<Competence> getDevelopCompetences(@Param("course")Course course);
 }

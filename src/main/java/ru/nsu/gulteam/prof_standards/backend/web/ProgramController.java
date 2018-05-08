@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.nsu.gulteam.prof_standards.backend.domain.node.BasicEducationProgram;
+import ru.nsu.gulteam.prof_standards.backend.domain.node.Competence;
 import ru.nsu.gulteam.prof_standards.backend.domain.node.Fgos;
 import ru.nsu.gulteam.prof_standards.backend.domain.node.User;
 import ru.nsu.gulteam.prof_standards.backend.entity.AnalyzeResult;
@@ -12,6 +13,7 @@ import ru.nsu.gulteam.prof_standards.backend.entity.FullBasicEducationProgramInf
 import ru.nsu.gulteam.prof_standards.backend.entity.FullCourseInfo;
 import ru.nsu.gulteam.prof_standards.backend.entity.FullBlockInfo;
 import ru.nsu.gulteam.prof_standards.backend.service.*;
+import ru.nsu.gulteam.prof_standards.backend.web.dto.mapping.CompetenceMapper;
 import ru.nsu.gulteam.prof_standards.backend.web.dto.mapping.CourseMapper;
 import ru.nsu.gulteam.prof_standards.backend.web.dto.mapping.ProgramMapper;
 import ru.nsu.gulteam.prof_standards.backend.web.dto.mapping.BlockMapper;
@@ -35,6 +37,7 @@ public class ProgramController {
     private final BlockMapper blockMapper;
     private final BlockService blockService;
     private final FgosService fgosService;
+    private final CompetenceMapper competenceMapper;
 
     @RequestMapping(path = "{programId}/addCourse", method = RequestMethod.GET)
     public ResponseEntity<?> addCourse(@PathVariable int programId) {
@@ -136,5 +139,13 @@ public class ProgramController {
     public ResponseEntity<?> analyze(@PathVariable int programId) {
         AnalyzeResult analyzeResult = analyzeService.analyze(programService.getProgram(programId));
         return ResponseEntity.ok(analyzeResult);
+    }
+
+    @RequestMapping(path = "{programId}/allRequiredCompetences", method = RequestMethod.GET)
+    public ResponseEntity<?> getAllRequiredCompetences(@PathVariable int programId) {
+        User user = userService.getUserEntity(securityService.getUserDetails());
+
+        List<Competence> competences = programService.getAllRequiredCompetences(user, programId);
+        return ResponseEntity.ok(competences.stream().map(competenceMapper::toDto).collect(Collectors.toList()));
     }
 }
