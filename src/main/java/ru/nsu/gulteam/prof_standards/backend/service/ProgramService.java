@@ -30,31 +30,12 @@ public class ProgramService {
     private TrajectoryService trajectoryService;
 
 
-    public FullCourseInfo addCourseTo(User creator, long programId) {
-        BasicEducationProgram program = programRepository.findOne(programId);
-
-        if (program == null) {
-            throw new IncorrectIdentifierException("There is no program with id: " + programId);
-        }
-
-        return addCourseTo(creator, program);
-    }
-
     public FullCourseInfo addCourseTo(User creator, BasicEducationProgram program) {
         Course course = courseRepository.save(new Course());
         courseRepository.connectToProgram(course, program);
         courseRepository.connectToCreator(course, creator);
 
         return courseService.getFullCourseInfo(creator, course);
-    }
-
-    public List<FullCourseInfo> getAllCourses(User user, long programId) {
-        BasicEducationProgram program = programRepository.findOne(programId);
-        if (program == null) {
-            throw new IncorrectIdentifierException("There is no program with id: " + programId);
-        }
-
-        return getAllCourses(user, program);
     }
 
     public List<FullCourseInfo> getAllCourses(User user, BasicEducationProgram program) {
@@ -74,11 +55,7 @@ public class ProgramService {
         return program;
     }
 
-    public void deleteProgram(long programId) {
-        BasicEducationProgram program = programRepository.findOne(programId);
-        if (program == null) {
-            throw new IncorrectIdentifierException("There is no program with id: " + programId);
-        }
+    public void deleteProgram(BasicEducationProgram program) {
         programRepository.deleteConnections(program);
         programRepository.delete(program);
     }
@@ -92,9 +69,11 @@ public class ProgramService {
         return program;
     }
 
-    public BasicEducationProgram updateProgram(int programId, BasicEducationProgramDto programDto) {
+    public BasicEducationProgram updateProgram(BasicEducationProgram oldProgram, BasicEducationProgramDto programDto) {
         BasicEducationProgram program = programMapper.fromDto(programDto);
         programRepository.clearBasedOn(program);
+
+        int programId = (int)(long)oldProgram.getId();
         BasicEducationProgram savedProgram = programRepository.save(program, programId);
         try {
             trajectoryService.updateTrajectories(program); // TODO batalin: async ?
@@ -105,19 +84,37 @@ public class ProgramService {
         return savedProgram;
     }
 
-    public boolean canCreateProgram(User user) {
-        FullUserInfo fullUserInfo = userService.getFullUserInfo(user);
+    public FullBasicEducationProgramInfo getFullProgramInfo(User user, BasicEducationProgram program) {
+        return new FullBasicEducationProgramInfo((int) (long) program.getId(),
+                program.getName(),
+                programRepository.getFacultyOf(program),
+                programRepository.getCreator(program),
+                program.getFgos(),
 
-        UserRole role = fullUserInfo.getRole().getName();
+                canUpdateProgram(user, program),
+                canDeleteProgram(user, program),
+                canAddVariableCourse(user, program));
+    }
 
-        return role.equals(UserRole.DEAN_MEMBER) && fullUserInfo.getFaculty() != null;
+    public List<Competence> getAllRequiredCompetences(User user, BasicEducationProgram program) {
+        return programRepository.findRequiredCompetences(program);
+    }
+
+    public List<Block> getAllTemplateCourses(User user, BasicEducationProgram basicEducationProgram) {
+        return blockRepository.findAllFromProgram(basicEducationProgram);
+    }
+
+    // CRUD Permissions //--------------------------------------------------------------------------------------------//
+
+    public boolean canReadProgramsList(User user) {
+        return true;
     }
 
     public boolean canReadProgram(User user, BasicEducationProgram program) {
         return true;
     }
 
-    public boolean canEditProgram(User user, BasicEducationProgram program) {
+    public boolean canCreateProgram(User user) {
         if (user == null) {
             return false;
         }
@@ -126,23 +123,47 @@ public class ProgramService {
 
         UserRole role = fullUserInfo.getRole().getName();
 
-        return role.equals(UserRole.ADMINISTRATOR) || role.equals(UserRole.DEAN_MEMBER) && fullUserInfo.getFaculty().equals(programRepository.getFacultyOf(program));
+        return role.equals(UserRole.ADMINISTRATOR) ||
+                (role.equals(UserRole.DEAN_MEMBER) && fullUserInfo.getFaculty() != null);
     }
 
-    public FullBasicEducationProgramInfo getFullProgramInfo(User user, BasicEducationProgram program) {
-        return new FullBasicEducationProgramInfo((int) (long) program.getId(),
-                program.getName(),
-                canEditProgram(user, program),
-                programRepository.getFacultyOf(program),
-                programRepository.getCreator(program),
-                program.getFgos());
+    public boolean canUpdateProgram(User user, BasicEducationProgram program) {
+        if (user == null) {
+            return false;
+        }
+
+        FullUserInfo fullUserInfo = userService.getFullUserInfo(user);
+
+        UserRole role = fullUserInfo.getRole().getName();
+
+        return role.equals(UserRole.ADMINISTRATOR) ||
+                (role.equals(UserRole.DEAN_MEMBER) && fullUserInfo.getFaculty().equals(programRepository.getFacultyOf(program)));
     }
 
-    public List<Competence> getAllRequiredCompetences(User user, long programId) {
-        return programRepository.findRequiredCompetences(programRepository.findOne(programId));
+    public boolean canDeleteProgram(User user, BasicEducationProgram program) {
+        if (user == null) {
+            return false;
+        }
+
+        FullUserInfo fullUserInfo = userService.getFullUserInfo(user);
+
+        UserRole role = fullUserInfo.getRole().getName();
+
+        return role.equals(UserRole.ADMINISTRATOR) ||
+                (role.equals(UserRole.DEAN_MEMBER) && fullUserInfo.getFaculty().equals(programRepository.getFacultyOf(program)));
     }
 
-    public List<Block> getAllTemplateCourses(User user, BasicEducationProgram basicEducationProgram) {
-        return blockRepository.findAllFromProgram(basicEducationProgram);
+    public boolean canAddVariableCourse(User user, BasicEducationProgram program) {
+        if (user == null) {
+            return false;
+        }
+
+        FullUserInfo fullUserInfo = userService.getFullUserInfo(user);
+
+        UserRole role = fullUserInfo.getRole().getName();
+
+        return role.equals(UserRole.ADMINISTRATOR) ||
+                (role.equals(UserRole.DEAN_MEMBER) && fullUserInfo.getFaculty().equals(programRepository.getFacultyOf(program))) ||
+                        (role.equals(UserRole.DEPARTMENT_MEMBER) && fullUserInfo.getFaculty().equals(programRepository.getFacultyOf(program)));
     }
 }

@@ -22,7 +22,9 @@ public interface CourseMapper {
             @Mapping(source = "course.department", target = "department"),
             @Mapping(source = "course.faculty", target = "faculty"),
             @Mapping(source = "course.developedBy", target = "developedBy"),
-            @Mapping(source = "course.canEditDevelopersList", target = "canEditDevelopersList"),
+            @Mapping(source = "course.canUpdate", target = "canUpdate"),
+            @Mapping(source = "course.canDelete", target = "canDelete"),
+            @Mapping(source = "course.canUpdateDevelopersList", target = "canUpdateDevelopersList"),
     })
     CourseDto toDto(FullCourseInfo course);
 

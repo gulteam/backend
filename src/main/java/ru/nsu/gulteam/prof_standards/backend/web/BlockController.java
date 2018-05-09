@@ -3,6 +3,8 @@ package ru.nsu.gulteam.prof_standards.backend.web;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.nsu.gulteam.prof_standards.backend.domain.node.BasicEducationProgram;
+import ru.nsu.gulteam.prof_standards.backend.domain.node.Block;
 import ru.nsu.gulteam.prof_standards.backend.domain.node.User;
 import ru.nsu.gulteam.prof_standards.backend.entity.FullBlockInfo;
 import ru.nsu.gulteam.prof_standards.backend.entity.FullCourseInfo;
@@ -29,11 +31,11 @@ public class BlockController {
     @RequestMapping(path = "{programId}/addCourse", method = RequestMethod.GET)
     public ResponseEntity<?> addCourse(@PathVariable int programId) {
         User user = userService.getUserEntity(securityService.getUserDetails());
+        BasicEducationProgram program = programService.getProgram(programId);
 
-        if (user == null) {
-            throw new RuntimeException("Cann't create course without user");
+        if (!programService.canAddVariableCourse(user, program)) {
+            return ResponseEntity.badRequest().body("You have no permissions to add variable course");
         }
-
 
         FullCourseInfo course = blockService.addCourseToBlock(user, programId);
         return ResponseEntity.ok(courseMapper.toDto(course));
@@ -42,25 +44,38 @@ public class BlockController {
     @RequestMapping(path = "{blockId}", method = RequestMethod.GET)
     public ResponseEntity<?> get(@PathVariable int blockId) {
         User user = userService.getUserEntity(securityService.getUserDetails());
+        Block rawBlock = blockService.getBlock(blockId);
 
-        FullBlockInfo block = blockService.getFullBlockInfo(user, blockService.getBlock(blockId));
+        if(!blockService.canReadBlock(user, rawBlock)){
+            return ResponseEntity.badRequest().body("You have no permissions to read block");
+        }
+
+        FullBlockInfo block = blockService.getFullBlockInfo(user, rawBlock);
         BlockDto blockDto = blockMapper.toDto(block);
-
         return ResponseEntity.ok(blockDto);
     }
 
     @RequestMapping(path = "{blockId}", method = RequestMethod.DELETE)
     public ResponseEntity<?> delete(@PathVariable int blockId) {
         User user = userService.getUserEntity(securityService.getUserDetails());
+        Block block = blockService.getBlock(blockId);
 
+        if(!blockService.canDeleteBlock(user, block)){
+            return ResponseEntity.badRequest().body("You have no permissions to delete block");
+        }
 
-        blockService.deleteBlock(blockId);
+        blockService.deleteBlock(block);
         return ResponseEntity.ok(new Message("Course successfully deleted"));
     }
 
     @RequestMapping(path = "{blockId}", method = RequestMethod.POST)
     public ResponseEntity<?> update(@PathVariable int blockId, @RequestBody BlockDto blockDto) {
         User user = userService.getUserEntity(securityService.getUserDetails());
+        Block oldBlock = blockService.getBlock(blockId);
+
+        if(!blockService.canUpdateBlock(user, oldBlock)){
+            return ResponseEntity.badRequest().body("You have no permissions to update block");
+        }
 
         FullBlockInfo block = blockService.updateBlock(user, blockId, blockDto);
         return ResponseEntity.ok(blockMapper.toDto(block));

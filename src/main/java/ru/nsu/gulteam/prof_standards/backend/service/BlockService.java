@@ -32,7 +32,7 @@ public class BlockService {
     public FullBlockInfo getFullBlockInfo(User user, Block block) {
         FullBlockInfo fullBlockInfo = new FullBlockInfo();
         fullBlockInfo.setBlock(block);
-        fullBlockInfo.setCanEdit(Block(user, block));
+        fullBlockInfo.setCanUpdate(Block(user, block));
         return fullBlockInfo;
     }
 
@@ -44,12 +44,8 @@ public class BlockService {
         return course;
     }
 
-    public void deleteBlock(long blockId) {
-        Block course = blockRepository.findOne(blockId);
-        if (course == null) {
-            throw new IncorrectIdentifierException("There is no block with id: " + blockId);
-        }
-        blockRepository.delete(course);
+    public void deleteBlock(Block block) {
+        blockRepository.delete(block);
     }
 
     public FullBlockInfo updateBlock(User user, long blockId, BlockDto blockDto) {
@@ -74,10 +70,6 @@ public class BlockService {
 
             courseRepository.save(course);
         });
-    }
-
-    public boolean canReadBlock(User user, Block block) {
-        return true;
     }
 
     public boolean Block(User user, Block block) {
@@ -109,27 +101,30 @@ public class BlockService {
         return courseService.getFullCourseInfo(user, newCourse.getCourse());
     }
 
-    public List<FullBlockInfo> getAllTemplateCourses(User user, long programId) {
-        BasicEducationProgram program = programRepository.findOne(programId);
-        if (program == null) {
-            throw new IncorrectIdentifierException("There is no program with id: " + programId);
-        }
-
+    public List<FullBlockInfo> getAllTemplateCourses(User user, BasicEducationProgram program) {
         List<Block> courses = blockRepository.findAllFromProgram(program);
         return courses.stream().map(course-> getFullBlockInfo(user, course)).collect(Collectors.toList());
     }
 
-    public FullBlockInfo addBlockTo(User creator, long programId) {
-        BasicEducationProgram program = programRepository.findOne(programId);
-
-        if (program == null) {
-            throw new IncorrectIdentifierException("There is no program with id: " + programId);
-        }
-
+    public FullBlockInfo addBlockTo(User creator, BasicEducationProgram program) {
         Block course = blockRepository.save(new Block());
         blockRepository.connectToProgram(course, program);
         blockRepository.connectToCreator(course, creator);
 
         return getFullBlockInfo(creator, course);
+    }
+
+    // CRUD Permissions //--------------------------------------------------------------------------------------------//
+
+    public boolean canReadBlock(User user, Block block) {
+        return true;
+    }
+
+    public boolean canUpdateBlock(User user, Block block) {
+        return programService.canUpdateProgram(user, programRepository.getProgramOf(block));
+    }
+
+    public boolean canDeleteBlock(User user, Block block) {
+        return programService.canUpdateProgram(user, programRepository.getProgramOf(block));
     }
 }

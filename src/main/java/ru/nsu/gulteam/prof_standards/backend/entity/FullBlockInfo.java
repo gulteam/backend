@@ -11,7 +11,8 @@ import java.util.List;
 public class FullBlockInfo {
     private Block block;
     private List<FullCourseInfo> courses;
-    private boolean canEdit;
+
+    private boolean canUpdate;
 
     public FullBlockInfo(Block block, List<FullCourseInfo> courses) {
         this.block = block;

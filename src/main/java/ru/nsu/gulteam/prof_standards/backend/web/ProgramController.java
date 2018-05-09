@@ -21,6 +21,7 @@ import ru.nsu.gulteam.prof_standards.backend.web.dto.response.BasicEducationProg
 import ru.nsu.gulteam.prof_standards.backend.web.dto.response.BlockDto;
 import ru.nsu.gulteam.prof_standards.backend.web.dto.response.Message;
 
+import java.nio.file.AccessDeniedException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,51 +32,63 @@ public class ProgramController {
     private final SecurityService securityService;
     private final UserService userService;
     private final ProgramService programService;
+    private final AnalyzeService analyzeService;
+    private final BlockService blockService;
+
     private final CourseMapper courseMapper;
     private final ProgramMapper programMapper;
-    private final AnalyzeService analyzeService;
     private final BlockMapper blockMapper;
-    private final BlockService blockService;
-    private final FgosService fgosService;
     private final CompetenceMapper competenceMapper;
 
     @RequestMapping(path = "{programId}/addCourse", method = RequestMethod.GET)
     public ResponseEntity<?> addCourse(@PathVariable int programId) {
         User user = userService.getUserEntity(securityService.getUserDetails());
+        BasicEducationProgram program = programService.getProgram(programId);
 
-        if (user == null) {
-            throw new RuntimeException("Cann't create course without user");
+        if (!programService.canUpdateProgram(user, program)) {
+            return ResponseEntity.badRequest().body("You have no permissions to add courses");
         }
 
-        FullCourseInfo course = programService.addCourseTo(user, programId);
+        FullCourseInfo course = programService.addCourseTo(user, program);
         return ResponseEntity.ok(courseMapper.toDto(course));
     }
 
     @RequestMapping(path = "{programId}/addTemplateCourse", method = RequestMethod.GET)
-    public ResponseEntity<?> addTemplateCourse(@PathVariable int programId) {
+    public ResponseEntity<?> addBlock(@PathVariable int programId) {
         User user = userService.getUserEntity(securityService.getUserDetails());
+        BasicEducationProgram program = programService.getProgram(programId);
 
-        if (user == null) {
-            throw new RuntimeException("Cann't create template course without user");
+        if (!programService.canUpdateProgram(user, program)) {
+            return ResponseEntity.badRequest().body("You have no permissions to add blocks");
         }
 
-        FullBlockInfo course = blockService.addBlockTo(user, programId);
-        return ResponseEntity.ok(blockMapper.toDto(course));
+        FullBlockInfo block = blockService.addBlockTo(user, program);
+        return ResponseEntity.ok(blockMapper.toDto(block));
     }
 
     @RequestMapping(path = "{programId}/allCourses", method = RequestMethod.GET)
     public ResponseEntity<?> getAllCourses(@PathVariable int programId) {
         User user = userService.getUserEntity(securityService.getUserDetails());
+        BasicEducationProgram program = programService.getProgram(programId);
 
-        List<FullCourseInfo> courses = programService.getAllCourses(user, programId);
+        if (!programService.canReadProgram(user, program)) {
+            return ResponseEntity.badRequest().body("You have no permissions to read all courses");
+        }
+
+        List<FullCourseInfo> courses = programService.getAllCourses(user, program);
         return ResponseEntity.ok(courses.stream().map(courseMapper::toDto).collect(Collectors.toList()));
     }
 
     @RequestMapping(path = "{programId}/allTemplateCourses", method = RequestMethod.GET)
-    public ResponseEntity<?> getAllTemplateCourses(@PathVariable int programId) {
+    public ResponseEntity<?> getAllBlocks(@PathVariable int programId) {
         User user = userService.getUserEntity(securityService.getUserDetails());
+        BasicEducationProgram program = programService.getProgram(programId);
 
-        List<FullBlockInfo> blocks = blockService.getAllTemplateCourses(user, programId);
+        if (!programService.canReadProgram(user, program)) {
+            return ResponseEntity.badRequest().body("You have no permissions to read all blocks");
+        }
+
+        List<FullBlockInfo> blocks = blockService.getAllTemplateCourses(user, program);
         List<BlockDto> blockDtos = blocks.stream().map(blockMapper::toDto).collect(Collectors.toList());
         return ResponseEntity.ok(blockDtos);
     }
@@ -84,34 +97,52 @@ public class ProgramController {
     public ResponseEntity<?> allPrograms() {
         User user = userService.getUserEntity(securityService.getUserDetails());
 
+        if (!programService.canReadProgramsList(user)) {
+            return ResponseEntity.badRequest().body("You have no permissions to read all programs");
+        }
+
         List<BasicEducationProgram> programs = programService.getAllPrograms();
         List<BasicEducationProgramDto> programDtos = programs.stream().map(program -> programService.getFullProgramInfo(user, program)).map(programMapper::toDto).collect(Collectors.toList());
-
         return ResponseEntity.ok(programDtos);
     }
 
     @RequestMapping(path = "{programId}", method = RequestMethod.GET)
     public ResponseEntity<?> get(@PathVariable int programId) {
         User user = userService.getUserEntity(securityService.getUserDetails());
-
         BasicEducationProgram program = programService.getProgram(programId);
-        FullBasicEducationProgramInfo fullInfo = programService.getFullProgramInfo(user, program);
 
+        if (!programService.canReadProgram(user, program)) {
+            return ResponseEntity.badRequest().body("You have no permissions to read program");
+        }
+
+        FullBasicEducationProgramInfo fullInfo = programService.getFullProgramInfo(user, program);
         return ResponseEntity.ok(programMapper.toDto(fullInfo));
     }
 
     @RequestMapping(path = "{programId}", method = RequestMethod.DELETE)
     public ResponseEntity<?> delete(@PathVariable int programId) {
-        programService.deleteProgram(programId);
+        User user = userService.getUserEntity(securityService.getUserDetails());
+        BasicEducationProgram program = programService.getProgram(programId);
+
+        if (!programService.canDeleteProgram(user, program)) {
+            return ResponseEntity.badRequest().body("You have no permissions to delete program");
+        }
+
+        programService.deleteProgram(program);
         return ResponseEntity.ok(new Message("Program successfully deleted"));
     }
 
     @RequestMapping(path = "{programId}", method = RequestMethod.POST)
     public ResponseEntity<?> update(@PathVariable int programId, @RequestBody BasicEducationProgramDto programDto) {
         User user = userService.getUserEntity(securityService.getUserDetails());
+        BasicEducationProgram program = programService.getProgram(programId);
 
-        BasicEducationProgram program = programService.updateProgram(programId, programDto);
-        FullBasicEducationProgramInfo fullInfo = programService.getFullProgramInfo(user, program);
+        if (!programService.canUpdateProgram(user, program)) {
+            return ResponseEntity.badRequest().body("You have no permissions to update program");
+        }
+
+        BasicEducationProgram updatedProgram = programService.updateProgram(program, programDto);
+        FullBasicEducationProgramInfo fullInfo = programService.getFullProgramInfo(user, updatedProgram);
 
         return ResponseEntity.ok(programMapper.toDto(fullInfo));
     }
@@ -120,13 +151,8 @@ public class ProgramController {
     public ResponseEntity<?> add() {
         User user = userService.getUserEntity(securityService.getUserDetails());
 
-        // Todo: debug
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Cann't create course without user");
-        }
-
         if (!programService.canCreateProgram(user)) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("This user have no permissions to create programs");
+            return ResponseEntity.badRequest().body("You have no permissions to create program");
         }
 
         BasicEducationProgram program = programService.addProgram(user);
@@ -144,8 +170,13 @@ public class ProgramController {
     @RequestMapping(path = "{programId}/allRequiredCompetences", method = RequestMethod.GET)
     public ResponseEntity<?> getAllRequiredCompetences(@PathVariable int programId) {
         User user = userService.getUserEntity(securityService.getUserDetails());
+        BasicEducationProgram program = programService.getProgram(programId);
 
-        List<Competence> competences = programService.getAllRequiredCompetences(user, programId);
+        if (!programService.canReadProgram(user, program)) {
+            return ResponseEntity.badRequest().body("You have no permissions to read program");
+        }
+
+        List<Competence> competences = programService.getAllRequiredCompetences(user, program);
         return ResponseEntity.ok(competences.stream().map(competenceMapper::toDto).collect(Collectors.toList()));
     }
 }

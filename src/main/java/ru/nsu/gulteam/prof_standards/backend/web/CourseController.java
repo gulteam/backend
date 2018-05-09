@@ -30,7 +30,7 @@ public class CourseController {
         User user = userService.getUserEntity(securityService.getUserDetails());
 
         if (!courseService.canReadCourse(user, courseService.getCourse(courseId))) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("This user have no permissions to read course");
+            return ResponseEntity.badRequest().body("This user have no permissions to read course");
         }
 
         FullCourseInfo course = courseService.getFullCourseInfo(user, courseService.getCourse(courseId));
@@ -46,8 +46,8 @@ public class CourseController {
     public ResponseEntity<?> delete(@PathVariable int courseId) {
         User user = userService.getUserEntity(securityService.getUserDetails());
 
-        if (!courseService.canEditCourse(user, courseService.getCourse(courseId))) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("This user have no permissions to delete course");
+        if (!courseService.canDeleteCourse(user, courseService.getCourse(courseId))) {
+            return ResponseEntity.badRequest().body("This user have no permissions to delete course");
         }
 
         courseService.deleteCourse(courseId);
@@ -59,7 +59,7 @@ public class CourseController {
         User user = userService.getUserEntity(securityService.getUserDetails());
 
         if (!courseService.canEditCourse(user, courseService.getCourse(courseId))) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("This user have no permissions to edit course");
+            return ResponseEntity.badRequest().body("This user have no permissions to edit course");
         }
 
         FullCourseInfo course = courseService.updateCourse(user, courseId, courseDto);

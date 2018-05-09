@@ -9,4 +9,7 @@ import ru.nsu.gulteam.prof_standards.backend.domain.node.FgosCourseRequirement;
 public interface FgosCourseRequirementRepository extends GraphRepository<FgosCourseRequirement> {
     @Query("START c=node({course}) MATCH (c)<-[r:REQUIRE]-() delete r")
     void deleteReferences(@Param("course") FgosCourseRequirement fgosCourseRequirement);
+
+    @Query("START c=node({course}) MATCH (c)--(f:FGOS) return f")
+    Fgos getFgos(@Param("course")FgosCourseRequirement fgosCourseRequirement);
 }

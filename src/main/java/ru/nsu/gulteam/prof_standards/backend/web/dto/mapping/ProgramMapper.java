@@ -21,6 +21,9 @@ public interface ProgramMapper {
     @Mappings({
             @Mapping(source = "program.createdBy", target = "createdBy"),
             @Mapping(source = "program.fgos", target = "fgos"),
+            @Mapping(source = "program.canAddVariableCourse", target = "canAddVariableCourse"),
+            @Mapping(source = "program.canUpdate", target = "canUpdate"),
+            @Mapping(source = "program.canDelete", target = "canDelete"),
     })
     BasicEducationProgramDto toDto(FullBasicEducationProgramInfo program);
     BasicEducationProgram fromDto(BasicEducationProgramDto programDto);

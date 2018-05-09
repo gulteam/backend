@@ -19,5 +19,5 @@ public class BlockDto {
     @NotNull
     private AttestationForm attestationForm;
     @NotNull
-    private boolean canEdit;
+    private boolean canUpdate;
 }

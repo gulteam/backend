@@ -15,11 +15,16 @@ public class BasicEducationProgramDto {
     @NotNull
     private String name;
     @NotNull
-    private boolean canEdit;
-    @NotNull
     private FacultyDto faculty;
     @NotNull
     private UserDto createdBy;
     @NotNull
     private FgosDto fgos;
+
+    @Getter
+    private boolean canUpdate;
+    @Getter
+    private boolean canDelete;
+    @Getter
+    private boolean canAddVariableCourse;
 }
