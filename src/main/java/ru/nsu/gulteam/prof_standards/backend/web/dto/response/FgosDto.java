@@ -7,9 +7,11 @@ import org.neo4j.ogm.annotation.Property;
 import org.neo4j.ogm.annotation.Relationship;
 import ru.nsu.gulteam.prof_standards.backend.domain.node.Competence;
 import ru.nsu.gulteam.prof_standards.backend.domain.node.FgosCourseRequirement;
+import ru.nsu.gulteam.prof_standards.backend.domain.node.ProfessionalStandard;
 
 import javax.validation.constraints.NotNull;
 import java.util.Set;
+import java.util.TreeSet;
 
 @Data
 @NoArgsConstructor
@@ -40,4 +42,7 @@ public class FgosDto {
 
     @NotNull
     private Set<FgosCourseRequirementDto> requireCourses;
+
+    @NotNull
+    private Set<ProfessionalStandardDto> professionalStandards;
 }

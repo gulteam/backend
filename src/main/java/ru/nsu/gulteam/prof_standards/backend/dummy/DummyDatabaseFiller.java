@@ -150,6 +150,9 @@ public class DummyDatabaseFiller {
         ProfessionalStandard microcontrollerDeveloper = professionalStandardRepository.save(new ProfessionalStandard("Microcontroller-developer", "B"));
         ProfessionalStandard sharpDeveloper = professionalStandardRepository.save(new ProfessionalStandard("C# developer", "C"));
 
+        fitFgos.setProfessionalStandards(new TreeSet<>(Arrays.asList(webDeveloper, microcontrollerDeveloper, sharpDeveloper)));
+        fitFgos = fgosRepository.save(fitFgos);
+
         // Generalized labor function
         GeneralizedLaborFunction GW1 = generalizedLaborFunctionRepository.save(new GeneralizedLaborFunction("GW1", "GW1", 6));
         GeneralizedLaborFunction GW2 = generalizedLaborFunctionRepository.save(new GeneralizedLaborFunction("GW2", "GW2", 6));

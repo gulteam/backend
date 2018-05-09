@@ -44,6 +44,9 @@ public class Fgos {
     @Relationship(type="REQUIRE")
     Set<FgosCourseRequirement> requireCourses = new TreeSet<>();
 
+    @Relationship(type="CAN_DEVELOP")
+    Set<ProfessionalStandard> professionalStandards = new TreeSet<>();
+
     public Fgos(String code, String name) {
         this.code = code;
         this.name = name;

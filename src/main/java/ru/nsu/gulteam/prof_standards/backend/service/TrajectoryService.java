@@ -29,11 +29,13 @@ public class TrajectoryService {
         List<Trajectory> trajectories = generateAllTrajectories(program);
         checkTrajectory(trajectories);
 
-        for (StudyTrajectory tr : trajectoryRepository.findAllByProgram(program)) {
+        // Короч, тип чтобы не было 100500 запросов, жахнул всё в одном, а то у меня на компуктере тормозило. Чекни, что сохранил семантику сего действа.
+        trajectoryRepository.deleteAllFromProgram(program);
+        /*for (StudyTrajectory tr : trajectoryRepository.findAllByProgram(program)) {
             Set<TrajectoryCourse> byTrajectory = trajectoryCourseRepository.getByTrajectory(tr);
             trajectoryCourseRepository.delete(byTrajectory);
             trajectoryRepository.delete(tr);
-        }
+        }*/
 
         for (Trajectory trajectory : trajectories) {
             StudyTrajectory tr = new StudyTrajectory();

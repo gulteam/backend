@@ -3,10 +3,9 @@ package ru.nsu.gulteam.prof_standards.backend.service;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
-import ru.nsu.gulteam.prof_standards.backend.domain.node.BasicEducationProgram;
-import ru.nsu.gulteam.prof_standards.backend.domain.node.Competence;
-import ru.nsu.gulteam.prof_standards.backend.domain.node.Fgos;
+import ru.nsu.gulteam.prof_standards.backend.domain.node.*;
 import ru.nsu.gulteam.prof_standards.backend.domain.repository.AnalyzeRepository;
+import ru.nsu.gulteam.prof_standards.backend.domain.repository.ProfessionalStandardRepository;
 import ru.nsu.gulteam.prof_standards.backend.entity.AnalyzeMessage;
 import ru.nsu.gulteam.prof_standards.backend.entity.AnalyzeResult;
 import ru.nsu.gulteam.prof_standards.backend.entity.FullCourseInfo;
@@ -20,7 +19,7 @@ import java.util.stream.Collectors;
 public class AnalyzeService {
     private final ProgramService programService;
     private final CourseService courseService;
-    private final ProfessionalStandardService standardService;
+    private final ProfessionalStandardRepository standardRepository;
     private final SearchService searchService;
     private final TrajectoryService trajectoryService;
     private final AnalyzeRepository analyzeRepository;
@@ -33,11 +32,6 @@ public class AnalyzeService {
 
         List<AnalyzeMessage> errorMessages = new ArrayList<>();
 
-        //errorMessages.addAll(checkForIncorrectDependsOrder(courses));
-        //errorMessages.addAll(checkForAttainabilityOfStandards(program));
-        //errorMessages.addAll(checkForAttainabilityOfTrajectories(trajectories));
-        //errorMessages.addAll(checkForAttainabilityOfCourses(trajectories, courses));
-
         if (program.getFgos() == null) {
             errorMessages.add(new AnalyzeMessage(AnalyzeMessage.Type.WARNING, "Для данной ООП не задан ФГОС!"));
         } else {
@@ -48,7 +42,90 @@ public class AnalyzeService {
             errorMessages.addAll(analyzeTrajectoriesAndCompetences(trajectories, program, fgos, courses));
         }
 
+        errorMessages.addAll(analyzeDependsGraph(courses));
+
+        errorMessages.addAll(analyzeProfStandartsReaching(trajectories, program, courses));
+
         return new AnalyzeResult(errorMessages);
+    }
+
+    private List<AnalyzeMessage> analyzeProfStandartsReaching(List<Trajectory> trajectories, BasicEducationProgram program, Map<Long, FullCourseInfo> courses) {
+        List<AnalyzeMessage> messages = new ArrayList<>();
+
+        Set<ProfessionalStandard> allReachedProfessionalStandarts = new TreeSet<>();
+
+        trajectories.forEach(trajectory -> {
+            List<ProfessionalStandard> professionalStandards = trajectoryService.getProfessionalStandardsReachedBy(trajectory);
+            if(professionalStandards.isEmpty()){
+                messages.add(new AnalyzeMessage(AnalyzeMessage.Type.ERROR, String.format("Траектория [%s] не достигает ни одного проф. стандарта", trajectoryToString(trajectory))));
+            }
+
+            allReachedProfessionalStandarts.addAll(professionalStandards);
+        });
+
+        standardRepository.findAll().stream().filter(s->!allReachedProfessionalStandarts.contains(s)).forEach(s->{
+            messages.add(new AnalyzeMessage(AnalyzeMessage.Type.WARNING, String.format("Ни одна траектория не достигает проф. стандарта \"%s\"", s.getName())));
+        });
+
+        return messages;
+    }
+
+    private List<AnalyzeMessage> analyzeDependsGraph(Map<Long, FullCourseInfo> courses) {
+        List<AnalyzeMessage> messages = new ArrayList<>();
+
+        for (FullCourseInfo course : courses.values()) {
+            Set<Long> previousCources = new TreeSet<>(course.getPreviousCourses());
+
+            Set<Long> checkedCourses = new TreeSet<>();
+            List<Long> queue = new ArrayList<>(course.getPreviousCourses());
+
+            while (!queue.isEmpty()) {
+                Long id = queue.remove(0);
+
+                if (checkedCourses.contains(id)) {
+                    continue;
+                }
+
+                List<Long> tempPrevious = courses.get(id).getPreviousCourses();
+                tempPrevious.forEach(tempId -> {
+                    if (checkedCourses.contains(id) || queue.contains(id)) {
+                        return;
+                    }
+
+                    queue.add(tempId);
+                });
+
+                previousCources.addAll(tempPrevious);
+                checkedCourses.add(id);
+            }
+
+            List<FullCourseInfo> badSemester = course.getPreviousCourses().stream().filter(pCourse -> courses.get(pCourse).getCourse().getSemester() >= course.getCourse().getSemester()).map(courses::get).collect(Collectors.toList());
+            badSemester.forEach(badCourse -> {
+                messages.add(new AnalyzeMessage(AnalyzeMessage.Type.ERROR, String.format("Дисциплина \"%s\" (%d семестр) требует предварительного изучения дисциплины \"%s\" (%d семестр)",
+                        course.getCourse().getName(),
+                        course.getCourse().getSemester(),
+                        badCourse.getCourse().getName(),
+                        badCourse.getCourse().getSemester())));
+            });
+
+
+            Map<Long, List<FullCourseInfo>> previousByBlocks = new TreeMap<>();
+            previousCources.stream().map(courses::get).filter(FullCourseInfo::isImplementsTemplate).forEach(c -> {
+                long blockId = c.getTemplateCourse();
+                previousByBlocks.putIfAbsent(blockId, new ArrayList<>());
+                previousByBlocks.get(blockId).add(c);
+            });
+
+            previousByBlocks.keySet().stream().filter(key -> previousByBlocks.get(key).size() > 1).forEach(key -> {
+                List<FullCourseInfo> previousInOneBlock = previousByBlocks.get(key);
+
+                messages.add(new AnalyzeMessage(AnalyzeMessage.Type.ERROR, String.format("Дисциплина \"%s\" требует предварительного изучения дисциплин [%s] из одного блока.",
+                        course.getCourse().getName(),
+                        StringUtils.join(previousInOneBlock.stream().map(c -> String.format("\"%s\"", c.getCourse().getName())).collect(Collectors.toList()), ", "))));
+            });
+        }
+
+        return messages;
     }
 
     private List<AnalyzeMessage> analyzeTrajectoriesAndCompetences(List<Trajectory> trajectories, BasicEducationProgram program, Fgos fgos, Map<Long, FullCourseInfo> courses) {
@@ -58,6 +135,7 @@ public class AnalyzeService {
         Map<Long, Competence> competencesById = new TreeMap<>();
         fgos.getRequireCompetence().forEach(competence -> competencesById.put(competence.getId(), competence));
 
+        // Todo: возможно, в neo4j есть возможность в виде ответа выдавать Map<Trajectory, List<>>
         for (Trajectory trajectory : trajectories) {
             Set<Integer> developedCompetences = trajectory
                     .getCourses()
@@ -71,30 +149,36 @@ public class AnalyzeService {
                 continue;
             }
 
-            String trajectoryString = StringUtils.join(trajectory.getCourses().stream().filter(FullCourseInfo::isImplementsTemplate).map(course -> course.getCourse().getName()).collect(Collectors.toList()), ", ");
+            String trajectoryString = trajectoryToString(trajectory);
             String competencesString = StringUtils.join(notDeveloped.stream().map(id -> String.format("\"%s\"", competencesById.get((long) (int) id).getCode())).collect(Collectors.toList()), ", ");
 
             messages.add(new AnalyzeMessage(AnalyzeMessage.Type.ERROR, String.format("Траектория \"%s\", не формирует компетенции [%s]", trajectoryString, competencesString)));
         }
 
-        if(messages.isEmpty()){
+        if (messages.isEmpty()) {
             messages.add(new AnalyzeMessage(AnalyzeMessage.Type.INFO, "Все компетенции формируемы при любой траектории."));
         }
 
         return messages;
     }
 
+    private String trajectoryToString(Trajectory trajectory) {
+        return StringUtils.join(trajectory.getCourses().stream().filter(FullCourseInfo::isImplementsTemplate).map(course -> course.getCourse().getName()).collect(Collectors.toList()), ", ");
+    }
+
     private List<AnalyzeMessage> analyzeRequiredCourses(BasicEducationProgram program, Map<Long, FullCourseInfo> courses) {
         List<AnalyzeMessage> messages = new ArrayList<>();
 
-        program.getFgos().getRequireCourses().forEach(course -> {
-            if (courses.values().stream().noneMatch(c -> !c.isImplementsTemplate() && c.getCourse().getName().equals(course.getName()))) {
-                messages.add(new AnalyzeMessage(AnalyzeMessage.Type.WARNING, String.format("Не найдена обязательная дисциплина \"%s\"", course.getName())));
-            }
+        List<FgosCourseRequirement> containsRequiredCourses = analyzeRepository.getContainsRequiredCourses(program);
+
+        List<FgosCourseRequirement> notFoundRequiredCourses = new ArrayList<>(program.getFgos().getRequireCourses());
+        notFoundRequiredCourses.removeAll(containsRequiredCourses);
+
+        notFoundRequiredCourses.forEach(course -> {
+            messages.add(new AnalyzeMessage(AnalyzeMessage.Type.WARNING, String.format("Не найдена обязательная дисциплина \"%s\"", course.getName())));
         });
 
-
-        if(messages.isEmpty()){
+        if (messages.isEmpty()) {
             messages.add(new AnalyzeMessage(AnalyzeMessage.Type.INFO, "Все обязательные дисциплины присутствуют в ООП."));
         }
 
@@ -116,74 +200,4 @@ public class AnalyzeService {
 
         return messages;
     }
-
-
-    /*private List<AnalyzeMessage> checkForAttainabilityOfTrajectories(List<Trajectory> trajectories) {
-        List<AnalyzeMessage> errorMessages = new ArrayList<>();
-
-        for (Trajectory trajectory : trajectories) {
-            if (trajectoryService.getProfessionalStandardsReachedBy(trajectory).isEmpty()) {
-                errorMessages.add(new AnalyzeMessage(AnalyzeMessage.Type.ERROR, String.format("Trajectory \"%s\" doesn't reach any standard", String.join(" | ",
-                        trajectory.getCourses()
-                                .stream()
-                                .map(course -> course.getCourse().getName())
-                                .collect(Collectors.toList())
-                ))));
-            }
-        }
-
-        return errorMessages;
-    }
-
-    private List<AnalyzeMessage> checkForAttainabilityOfCourses(List<Trajectory> trajectories, Map<Long, FullCourseInfo> courses) {
-        List<AnalyzeMessage> errorMessages = new ArrayList<>();
-
-        courses.keySet().forEach(courseId -> {
-            if (trajectories.stream().noneMatch(trajectory -> trajectory.getCourses().stream().anyMatch(course -> course.getCourse().getId().equals(courseId)))) {
-                errorMessages.add(new AnalyzeMessage(AnalyzeMessage.Type.ERROR, String.format("There is no trajectory that contains course \"%s\"", courses.get(courseId).getCourse().getName())));
-            }
-        });
-
-        return errorMessages;
-    }
-
-    private List<AnalyzeMessage> checkForAttainabilityOfStandards(BasicEducationProgram program) {
-        List<AnalyzeMessage> errorMessages = new ArrayList<>();
-
-        for (ProfessionalStandard professionalStandard : standardService.getAllStandards()) {
-            if (searchService.search(new FullSearchRequest(program, Collections.emptyList(), Collections.emptyList(), Collections.singletonList(professionalStandard), Collections.emptyList())).isEmpty()) {
-                errorMessages.add(new AnalyzeMessage(AnalyzeMessage.Type.ERROR, String.format("There is no trajectory for standard \"%s\"", professionalStandard.getName())));
-            }
-        }
-
-        return errorMessages;
-    }
-
-    private List<AnalyzeMessage> checkForIncorrectDependsOrder(Map<Long, FullCourseInfo> courses) {
-        List<AnalyzeMessage> errorMessages = new ArrayList<>();
-
-        courses.values().forEach(course -> {
-            int currentSemester = course.getCourse().getSemester();
-
-            List<FullCourseInfo> previousCourses = course.getPreviousCourses().stream().map(courses::get).collect(Collectors.toList());
-
-            previousCourses.stream()
-                    .filter(previousCourse -> previousCourse.getCourse().getSemester() > currentSemester)
-                    .forEach(previousCourse -> {
-                        errorMessages.add(new AnalyzeMessage(AnalyzeMessage.Type.ERROR, String.format("\"%s\" (%d semester) depends on \"%s\"(%d semester)", course.getCourse().getName(), currentSemester, previousCourse.getCourse().getName(), previousCourse.getCourse().getSemester())));
-                    });
-
-            Map<Long, List<FullCourseInfo>> dependenciesByBlocks = new TreeMap<>();
-            previousCourses.stream().filter(FullCourseInfo::isImplementsTemplate).forEach(previousCourse -> {
-                dependenciesByBlocks.putIfAbsent(previousCourse.getTemplateCourse(), new ArrayList<>());
-                dependenciesByBlocks.get(previousCourse.getTemplateCourse()).add(previousCourse);
-            });
-
-            dependenciesByBlocks.keySet().stream().filter(key -> dependenciesByBlocks.get(key).size() > 1).forEach(key -> {
-                errorMessages.add(new AnalyzeMessage(AnalyzeMessage.Type.ERROR, String.format("\"%s\" depends on two or more courses from one block \"%s\"", course.getCourse().getName(), String.join(" | ", dependenciesByBlocks.get(key).stream().map(baseCourse -> baseCourse.getCourse().getName()).collect(Collectors.toList())))));
-            });
-        });
-
-        return errorMessages;
-    }*/
 }

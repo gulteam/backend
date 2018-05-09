@@ -11,7 +11,7 @@ import org.neo4j.ogm.annotation.Property;
 @NoArgsConstructor
 @EqualsAndHashCode(of = "id")
 @NodeEntity(label = "PROFESSIONAL_STANDARD")
-public class ProfessionalStandard {
+public class ProfessionalStandard implements Comparable<ProfessionalStandard>{
     @GraphId
     @Property(name = "ID")
     private Long id;
@@ -25,5 +25,10 @@ public class ProfessionalStandard {
     public ProfessionalStandard(String name, String code) {
         this.name = name;
         this.code = code;
+    }
+
+    @Override
+    public int compareTo(ProfessionalStandard o) {
+        return (int)(id - o.id);
     }
 }
