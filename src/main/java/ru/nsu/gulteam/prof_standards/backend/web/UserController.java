@@ -60,20 +60,25 @@ public class UserController extends BaseController {
 
     @RequestMapping(path = "allUsers", method = RequestMethod.GET)
     public ResponseEntity<?> getAllUser() {
+        User requester = userService.getUserEntity(securityService.getUserDetails());
         List<User> users = userService.getAllUsers();
-        return ResponseEntity.ok(users.stream().map(userService::getFullUserInfo).map(userMapper::toDto).collect(Collectors.toList()));
+        return ResponseEntity.ok(users.stream().map(u->userService.getFullUserInfo(requester, u)).map(userMapper::toDto).collect(Collectors.toList()));
     }
 
     @RequestMapping(path = "user/{userId}", method = RequestMethod.GET)
     public ResponseEntity<?> getUser(@PathVariable int userId) {
+        User requester = userService.getUserEntity(securityService.getUserDetails());
         User user = userService.getUser(userId);
-        return ResponseEntity.ok(userMapper.toDto(userService.getFullUserInfo(user)));
+        return ResponseEntity.ok(userMapper.toDto(userService.getFullUserInfo(requester, user)));
     }
 
     @RequestMapping(path = "user/{userId}", method = RequestMethod.POST)
     public ResponseEntity<?> updateUser(@PathVariable int userId, @RequestBody UserDto userDto) {
-        User user = userService.updateUser(userMapper.fromDto(userDto), userId);
-        return ResponseEntity.ok(userMapper.toDto(userService.getFullUserInfo(user)));
+        User requester = userService.getUserEntity(securityService.getUserDetails());
+
+        User user = userService.updateUser(requester, userMapper.fromDto(userDto), userId);
+
+        return ResponseEntity.ok(userMapper.toDto(userService.getFullUserInfo(requester, user)));
     }
 
     @RequestMapping(path = "userPermissions", method = RequestMethod.GET)
