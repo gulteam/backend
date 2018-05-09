@@ -1,6 +1,7 @@
 package ru.nsu.gulteam.prof_standards.backend.web.dto.response;
 
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.neo4j.ogm.annotation.GraphId;
 import org.neo4j.ogm.annotation.Property;
@@ -45,4 +46,11 @@ public class FgosDto {
 
     @NotNull
     private Set<ProfessionalStandardDto> professionalStandards;
+
+    @Getter
+    private boolean canUpdate;
+    @Getter
+    private boolean canDelete;
+    @Getter
+    private UserDto createdBy;
 }

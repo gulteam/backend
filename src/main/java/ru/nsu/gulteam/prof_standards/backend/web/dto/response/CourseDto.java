@@ -38,14 +38,20 @@ public class CourseDto {
     private int programId;
     @NotNull
     private UserDto createdBy;
-    @NotNull
-    private boolean canEdit;
+
     @NotNull
     private DepartmentDto department;
     @NotNull
     private FacultyDto faculty;
     @NotNull
     private List<Integer> developedBy;
+
     @NotNull
-    private boolean canEditDevelopersList;
+    private boolean canUpdate;
+
+    @NotNull
+    private boolean canDelete;
+
+    @NotNull
+    private boolean canUpdateDevelopersList;
 }

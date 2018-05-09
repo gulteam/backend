@@ -47,8 +47,12 @@ public class Fgos {
     @Relationship(type="CAN_DEVELOP")
     Set<ProfessionalStandard> professionalStandards = new TreeSet<>();
 
-    public Fgos(String code, String name) {
+    @Relationship(type="CREATED_BY")
+    User creator = null;
+
+    public Fgos(String code, String name, User creator) {
         this.code = code;
         this.name = name;
+        this.creator = creator;
     }
 }

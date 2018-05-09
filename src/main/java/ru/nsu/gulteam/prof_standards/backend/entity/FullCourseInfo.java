@@ -25,8 +25,9 @@ public class FullCourseInfo {
     private List<Long> developedBy;
     private long programId;
 
-    private boolean canEdit;
-    private boolean canEditDevelopersList;
+    private boolean canUpdate;
+    private boolean canDelete;
+    private boolean canUpdateDevelopersList;
     private FullUserInfo createdBy;
 
     private Department department;

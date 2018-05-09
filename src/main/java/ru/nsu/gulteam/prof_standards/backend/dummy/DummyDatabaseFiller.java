@@ -52,40 +52,6 @@ public class DummyDatabaseFiller {
 
         userService.initialize();
 
-        // Fgos
-        Fgos fitFgos = new Fgos("09.03.01", "Информатика и вычислительная техника");
-        fitFgos.setDisciplineVolumeFrom(160);
-        fitFgos.setPracticeVolumeFrom(20);
-        fitFgos.setAttestationVolumeFrom(9);
-        fitFgos.setSummaryVolume(240);
-        fitFgos = fgosRepository.save(fitFgos);
-
-        // Competence
-        Competence oc1 = competenceRepository.save(new Competence("ОК-1", "Способность использовать основы философских знаний для формирования мировоззренческой позиции"));
-        Competence oc3 = competenceRepository.save(new Competence("ОК-3", "Способность использовать основы экономических знаний в различных сферах деятельности"));
-        Competence opc1 = competenceRepository.save(new Competence("ОПК-3", "Способность инсталлировать программное и аппаратное обеспечение для информационных и автоматизированных систем"));
-
-        fitFgos.setRequireCompetence(new TreeSet<>(Arrays.asList(oc1, oc3, opc1)));
-
-        // Course Requirements
-        FgosCourseRequirement cr1 = fgosCourseRequirementRepository.save(new FgosCourseRequirement("История России"));
-        FgosCourseRequirement cr2 = fgosCourseRequirementRepository.save(new FgosCourseRequirement("Философия"));
-        FgosCourseRequirement cr3 = fgosCourseRequirementRepository.save(new FgosCourseRequirement("Безопасность жизнедеятельности"));
-        FgosCourseRequirement cr4 = fgosCourseRequirementRepository.save(new FgosCourseRequirement("Физическая культура и спорт"));
-
-        fitFgos.setRequireCourses(new TreeSet<>(Arrays.asList(cr1, cr2, cr3, cr4)));
-        fitFgos = fgosRepository.save(fitFgos);
-
-        // Fgos
-        Fgos archFgos = fgosRepository.save(new Fgos("07.03.01", "Архитиектура"));
-        archFgos.setDisciplineVolumeFrom(240);
-        archFgos.setPracticeVolumeFrom(30);
-        archFgos.setAttestationVolumeFrom(15);
-        archFgos.setSummaryVolume(300);
-        FgosCourseRequirement archCr1 = fgosCourseRequirementRepository.save(new FgosCourseRequirement("Математическмй анализ"));
-        archFgos.setRequireCourses(new TreeSet<>(Arrays.asList(archCr1)));
-        archFgos = fgosRepository.save(archFgos);
-
         // Faculties
         Faculty FIT = facultyRepository.save(new Faculty("ФИТ"));
         Faculty FIJA = facultyRepository.save(new Faculty("ФИЯ"));
@@ -144,6 +110,41 @@ public class DummyDatabaseFiller {
         User fijaDean = userService.addNew(new User("Александра", "Иностранная", "fija", passwordEncoder.encode("fija")));
         facultyRepository.connectToUser(FIJA, fijaDean);
         userService.setRole(fijaDean, UserRole.DEAN_MEMBER);
+
+        // Fgos
+        Fgos fitFgos = new Fgos("09.03.01", "Информатика и вычислительная техника", fitDean);
+        fitFgos.setDisciplineVolumeFrom(160);
+        fitFgos.setPracticeVolumeFrom(20);
+        fitFgos.setAttestationVolumeFrom(9);
+        fitFgos.setSummaryVolume(240);
+        fitFgos = fgosRepository.save(fitFgos);
+
+        // Competence
+        Competence oc1 = competenceRepository.save(new Competence("ОК-1", "Способность использовать основы философских знаний для формирования мировоззренческой позиции"));
+        Competence oc3 = competenceRepository.save(new Competence("ОК-3", "Способность использовать основы экономических знаний в различных сферах деятельности"));
+        Competence opc1 = competenceRepository.save(new Competence("ОПК-3", "Способность инсталлировать программное и аппаратное обеспечение для информационных и автоматизированных систем"));
+
+        fitFgos.setRequireCompetence(new TreeSet<>(Arrays.asList(oc1, oc3, opc1)));
+
+        // Course Requirements
+        FgosCourseRequirement cr1 = fgosCourseRequirementRepository.save(new FgosCourseRequirement("История России"));
+        FgosCourseRequirement cr2 = fgosCourseRequirementRepository.save(new FgosCourseRequirement("Философия"));
+        FgosCourseRequirement cr3 = fgosCourseRequirementRepository.save(new FgosCourseRequirement("Безопасность жизнедеятельности"));
+        FgosCourseRequirement cr4 = fgosCourseRequirementRepository.save(new FgosCourseRequirement("Физическая культура и спорт"));
+
+        fitFgos.setRequireCourses(new TreeSet<>(Arrays.asList(cr1, cr2, cr3, cr4)));
+        fitFgos = fgosRepository.save(fitFgos);
+
+        // Fgos
+        Fgos archFgos = fgosRepository.save(new Fgos("07.03.01", "Архитиектура", fijaDean));
+        archFgos.setDisciplineVolumeFrom(240);
+        archFgos.setPracticeVolumeFrom(30);
+        archFgos.setAttestationVolumeFrom(15);
+        archFgos.setSummaryVolume(300);
+        FgosCourseRequirement archCr1 = fgosCourseRequirementRepository.save(new FgosCourseRequirement("Математический анализ"));
+        archFgos.setRequireCourses(new TreeSet<>(Arrays.asList(archCr1)));
+        archFgos = fgosRepository.save(archFgos);
+
 
         // Professional standard
         ProfessionalStandard webDeveloper = professionalStandardRepository.save(new ProfessionalStandard("Web-developer", "A"));

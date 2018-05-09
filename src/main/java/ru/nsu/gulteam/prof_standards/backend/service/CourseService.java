@@ -65,8 +65,9 @@ public class CourseService {
 
         fullCourseInfo.setCreatedBy(userService.getFullUserInfo(courseRepository.getCreator(course)));
 
-        fullCourseInfo.setCanEdit(canEditCourse(user, course));
-        fullCourseInfo.setCanEditDevelopersList(canEditDevelopersList(user, course));
+        fullCourseInfo.setCanUpdate(canEditCourse(user, course));
+        fullCourseInfo.setCanUpdateDevelopersList(canEditDevelopersList(user, course));
+        fullCourseInfo.setCanDelete(canDeleteCourse(user, course));
 
         fullCourseInfo.setFaculty(facultyRepository.getFaculty(course));
 
@@ -181,6 +182,18 @@ public class CourseService {
         return getFullCourseInfo(user, savedCourse);
     }
 
+    public FullCourseInfo getFullCourseInfo(Course course) {
+        return getFullCourseInfo(null, course);
+    }
+
+    public Course setRating(long courseID, double rating) {
+        Course course = courseRepository.findOne(courseID);
+        course.setRating(rating);
+        return courseRepository.save(course);
+    }
+
+    // CRUD Permissions //--------------------------------------------------------------------------------------------//
+
     public boolean canReadCourse(User user, Course course) {
         return true;
     }
@@ -198,12 +211,12 @@ public class CourseService {
 
         FullCourseInfo fullCourseInfo = getFullCourseInfo(course);
         Faculty responsibleFaculty = fullCourseInfo.getFaculty();
-        Department responcibleDepartment = fullCourseInfo.getDepartment();
+        Department responsibleDepartment = fullCourseInfo.getDepartment();
 
         return role.equals(UserRole.ADMINISTRATOR)
                 || (role.equals(UserRole.DEAN_MEMBER) && fullUserInfo.getFaculty().equals(courseFaculty))
                 || role.equals(UserRole.DEAN_MEMBER) && fullUserInfo.getFaculty().equals(responsibleFaculty)
-                || role.equals(UserRole.DEPARTMENT_MEMBER) && fullUserInfo.getDepartment().equals(responcibleDepartment);
+                || role.equals(UserRole.DEPARTMENT_MEMBER) && fullUserInfo.getDepartment().equals(responsibleDepartment);
     }
 
     public boolean canEditCourse(User user, Course course) {
@@ -218,24 +231,32 @@ public class CourseService {
 
         FullCourseInfo fullCourseInfo = getFullCourseInfo(course);
         Faculty responsibleFaculty = fullCourseInfo.getFaculty();
-        Department responcibleDepartment = fullCourseInfo.getDepartment();
+        Department responsibleDepartment = fullCourseInfo.getDepartment();
 
         return fullCourseInfo.getDevelopedBy().contains(user.getId()) ||
+                fullCourseInfo.getCreatedBy().getUser().getId().equals(user.getId()) ||
                 role.equals(UserRole.ADMINISTRATOR) ||
                 (role.equals(UserRole.DEAN_MEMBER) && fullUserInfo.getFaculty().equals(courseFaculty)) ||
                 (role.equals(UserRole.DEAN_MEMBER) && fullUserInfo.getFaculty().equals(responsibleFaculty)) ||
-                (role.equals(UserRole.DEPARTMENT_MEMBER) && fullUserInfo.getDepartment().equals(responcibleDepartment));
+                (role.equals(UserRole.DEPARTMENT_MEMBER) && fullUserInfo.getDepartment().equals(responsibleDepartment));
     }
 
+    public boolean canDeleteCourse(User user, Course course) {
+        if (user == null) {
+            return false;
+        }
 
-    public FullCourseInfo getFullCourseInfo(Course course) {
-        return getFullCourseInfo(null, course);
-    }
+        FullUserInfo fullUserInfo = userService.getFullUserInfo(user);
 
-    public Course setRating(long courseID, double rating)
-    {
-        Course course = courseRepository.findOne(courseID);
-        course.setRating(rating);
-        return courseRepository.save(course);
+        UserRole role = fullUserInfo.getRole().getName();
+        Faculty courseFaculty = programRepository.getFacultyOf(programRepository.getProgramOf(course));
+
+        FullCourseInfo fullCourseInfo = getFullCourseInfo(course);
+        Faculty responsibleFaculty = fullCourseInfo.getFaculty();
+        Department responsibleDepartment = fullCourseInfo.getDepartment();
+
+        return role.equals(UserRole.ADMINISTRATOR) ||
+                (role.equals(UserRole.DEAN_MEMBER) && fullUserInfo.getFaculty().equals(courseFaculty)) ||
+                (role.equals(UserRole.DEAN_MEMBER) && fullUserInfo.getFaculty().equals(responsibleFaculty));
     }
 }

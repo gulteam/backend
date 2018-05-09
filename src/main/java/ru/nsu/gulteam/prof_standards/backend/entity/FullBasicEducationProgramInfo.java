@@ -13,11 +13,16 @@ public class FullBasicEducationProgramInfo {
     @Getter
     private String name;
     @Getter
-    private boolean canEdit;
-    @Getter
     private Faculty faculty;
     @Getter
     private User createdBy;
     @Getter
     private Fgos fgos;
+
+    @Getter
+    private boolean canUpdate;
+    @Getter
+    private boolean canDelete;
+    @Getter
+    private boolean canAddVariableCourse;
 }

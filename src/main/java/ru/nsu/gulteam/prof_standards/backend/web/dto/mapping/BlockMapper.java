@@ -17,7 +17,7 @@ public interface BlockMapper {
             @Mapping(source = "block.amount", target = "amount"),
             @Mapping(source = "block.semester", target = "semester"),
             @Mapping(source = "block.attestationForm", target = "attestationForm"),
-            @Mapping(source = "canEdit", target = "canEdit"),
+            @Mapping(source = "canUpdate", target = "canUpdate"),
     })
     BlockDto toDto(FullBlockInfo course);
 
