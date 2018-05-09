@@ -55,7 +55,7 @@ public class AnalyzeService {
         Set<ProfessionalStandard> allReachedProfessionalStandarts = new TreeSet<>();
 
         trajectories.forEach(trajectory -> {
-            List<ProfessionalStandard> professionalStandards = trajectoryService.getProfessionalStandardsReachedBy(trajectory);
+            List<ProfessionalStandard> professionalStandards = trajectoryService.getProfessionalStandardsReachedBy(trajectory, program);
             if(professionalStandards.isEmpty()){
                 messages.add(new AnalyzeMessage(AnalyzeMessage.Type.ERROR, String.format("Траектория [%s] не достигает ни одного проф. стандарта", trajectoryToString(trajectory))));
             }
@@ -63,7 +63,7 @@ public class AnalyzeService {
             allReachedProfessionalStandarts.addAll(professionalStandards);
         });
 
-        standardRepository.findAll().stream().filter(s->!allReachedProfessionalStandarts.contains(s)).forEach(s->{
+        standardRepository.findAllFromProgram(program).stream().filter(s->!allReachedProfessionalStandarts.contains(s)).forEach(s->{
             messages.add(new AnalyzeMessage(AnalyzeMessage.Type.WARNING, String.format("Ни одна траектория не достигает проф. стандарта \"%s\"", s.getName())));
         });
 

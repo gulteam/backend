@@ -96,7 +96,12 @@ public class ProgramService {
         BasicEducationProgram program = programMapper.fromDto(programDto);
         programRepository.clearBasedOn(program);
         BasicEducationProgram savedProgram = programRepository.save(program, programId);
-        trajectoryService.updateTrajectories(program); // TODO batalin: async ?
+        try {
+            trajectoryService.updateTrajectories(program); // TODO batalin: async ?
+        }
+        catch (Exception ignore){
+            // Todo asm: может просто тогда хранить список ошибок и их по запросу выдавать? Тип как в линухах, после каждой операции чекать errno.
+        }
         return savedProgram;
     }
 

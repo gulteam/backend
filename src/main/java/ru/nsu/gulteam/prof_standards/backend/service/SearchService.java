@@ -159,8 +159,8 @@ public class SearchService {
             if (currentBlock == sortedBlocks.size()) {
                 double trajectoryWeight = currentTrajectory.stream().mapToDouble(a -> a.getCourse().getRating()).sum(); // Todo: use prof. standarts
 
-                if (trajectoryService.isThisTrajecory(currentTrajectory)) {
-                    List<ProfessionalStandard> achievedProfessionalStandard = trajectoryService.getProfessionalStandardsReachedBy(new Trajectory(currentTrajectory));
+                if (trajectoryService.isThisTrajecory(currentTrajectory, fullSearchRequest.getBasicEducationProgram())) {
+                    List<ProfessionalStandard> achievedProfessionalStandard = trajectoryService.getProfessionalStandardsReachedBy(new Trajectory(currentTrajectory), fullSearchRequest.getBasicEducationProgram());
 
                     Set<Long> includeStandards = fullSearchRequest.getIncludeStandards().stream().map(ProfessionalStandard::getId).collect(Collectors.toSet());
                     Set<Long> excludeStandards = fullSearchRequest.getExcludeStandards().stream().map(ProfessionalStandard::getId).collect(Collectors.toSet());

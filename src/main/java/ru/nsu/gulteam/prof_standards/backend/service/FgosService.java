@@ -8,6 +8,7 @@ import ru.nsu.gulteam.prof_standards.backend.domain.node.FgosCourseRequirement;
 import ru.nsu.gulteam.prof_standards.backend.domain.repository.CompetenceRepository;
 import ru.nsu.gulteam.prof_standards.backend.domain.repository.FgosCourseRequirementRepository;
 import ru.nsu.gulteam.prof_standards.backend.domain.repository.FgosRepository;
+import ru.nsu.gulteam.prof_standards.backend.domain.repository.ProfessionalStandardRepository;
 import ru.nsu.gulteam.prof_standards.backend.exception.IncorrectIdentifierException;
 
 import java.util.ArrayList;
@@ -19,6 +20,7 @@ public class FgosService {
     private final FgosRepository fgosRepository;
     private final CompetenceRepository competenceRepository;
     private final FgosCourseRequirementRepository fgosCourseRequirementRepository;
+    private final ProfessionalStandardRepository professionalStandardRepository;
 
     public List<Fgos> getAll() {
         List<Fgos> result = new ArrayList<>();
@@ -57,7 +59,12 @@ public class FgosService {
         oldFgos.setPracticeVolumeFrom(fgos.getPracticeVolumeFrom());
         oldFgos.setSummaryVolume(fgos.getSummaryVolume());
 
-        return fgosRepository.save(fgos);
+        oldFgos.getProfessionalStandards().clear();
+        fgos.getProfessionalStandards().forEach(professionalStandard -> {
+            oldFgos.getProfessionalStandards().add(professionalStandardRepository.findOne(professionalStandard.getId()));
+        });
+
+        return fgosRepository.save(oldFgos);
     }
 
     public Fgos create() {
