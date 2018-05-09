@@ -65,7 +65,7 @@ public class BlockService {
         return getFullBlockInfo(user, savedBlock);
     }
 
-    private void updateAllCoursesFromBlock(Block block){
+    public void updateAllCoursesFromBlock(Block block){
         List<Course> courses = courseRepository.getAllCoursesFromBlock(block);
         courses.forEach(course -> {
             course.setSemester(block.getSemester());

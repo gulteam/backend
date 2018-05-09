@@ -27,13 +27,15 @@ public class TrajectoryService {
     
     public void updateTrajectories(BasicEducationProgram program) {
         List<Trajectory> trajectories = generateAllTrajectories(program);
-        checkTrajectory(trajectories);
+        checkTrajectory(trajectories, program);
 
-        for (StudyTrajectory tr : trajectoryRepository.findAllByProgram(program)) {
+        // Короч, тип чтобы не было 100500 запросов, жахнул всё в одном, а то у меня на компуктере тормозило. Чекни, что сохранил семантику сего действа.
+        trajectoryRepository.deleteAllFromProgram(program);
+        /*for (StudyTrajectory tr : trajectoryRepository.findAllByProgram(program)) {
             Set<TrajectoryCourse> byTrajectory = trajectoryCourseRepository.getByTrajectory(tr);
             trajectoryCourseRepository.delete(byTrajectory);
             trajectoryRepository.delete(tr);
-        }
+        }*/
 
         for (Trajectory trajectory : trajectories) {
             StudyTrajectory tr = new StudyTrajectory();
@@ -49,7 +51,7 @@ public class TrajectoryService {
                 trajectoryCourseRepository.connectToCourse(course, trajectoryCourse);
             }
 
-            for (ProfessionalStandard standard : getProfessionalStandardsReachedBy(trajectory)) {
+            for (ProfessionalStandard standard : getProfessionalStandardsReachedBy(trajectory, program)) {
                 tr = trajectoryRepository.connectToStandard(tr, standard);
             }
         }
@@ -87,10 +89,10 @@ public class TrajectoryService {
         }
     }
 
-    public List<ProfessionalStandard> getProfessionalStandardsReachedBy(Trajectory trajectory) {
+    public List<ProfessionalStandard> getProfessionalStandardsReachedBy(Trajectory trajectory, BasicEducationProgram program) {
         List<ProfessionalStandard> reachedStandards = new ArrayList<>();
 
-        for(ProfessionalStandard professionalStandard : professionalStandardRepository.findAll()){
+        for(ProfessionalStandard professionalStandard : professionalStandardRepository.findAllFromProgram(program)){
             Set<Skills> requiredSkills = skillsRepository.getRequiredForStandard(professionalStandard);
             Set<Knowledge> requiredKnowledge = knowledgeRepository.getRequiredForStandard(professionalStandard);
 
@@ -110,13 +112,13 @@ public class TrajectoryService {
         return reachedStandards;
     }
 
-    private void checkTrajectory(List<Trajectory> trajectories) {
+    private void checkTrajectory(List<Trajectory> trajectories, BasicEducationProgram program) {
         for (Trajectory trajectory : trajectories) {
             if (trajectory.getCourses().stream().anyMatch(Objects::isNull)) {
                 throw new RuntimeException("Trajectory with gap");
             }
 
-            if (CollectionUtils.isEmpty(getProfessionalStandardsReachedBy(trajectory))) {
+            if (CollectionUtils.isEmpty(getProfessionalStandardsReachedBy(trajectory, program))) {
                 throw new RuntimeException("Trajectory without prof. standard");
             }
         }
@@ -181,7 +183,7 @@ public class TrajectoryService {
         }
     }
 
-    boolean isThisTrajecory(List<FullCourseInfo> courses){
-        return getProfessionalStandardsReachedBy(new Trajectory(courses)).isEmpty();
+    boolean isThisTrajecory(List<FullCourseInfo> courses, BasicEducationProgram program){
+        return getProfessionalStandardsReachedBy(new Trajectory(courses), program).isEmpty();
     }
 }
