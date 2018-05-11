@@ -16,6 +16,7 @@ public interface ProfessionalStandardRepository extends GraphRepository<Professi
     List<ProfessionalStandard> findAll();
 
 
+
     @Query("MATCH (n:`PROFESSIONAL_STANDARD`) WHERE ID(n) = {id} RETURN n")
     ProfessionalStandard findById(@Param("id") Long professionalStandardId);
 
