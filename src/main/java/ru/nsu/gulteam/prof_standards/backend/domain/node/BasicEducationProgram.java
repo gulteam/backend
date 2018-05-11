@@ -6,6 +6,9 @@ import lombok.NoArgsConstructor;
 import org.neo4j.ogm.annotation.GraphId;
 import org.neo4j.ogm.annotation.NodeEntity;
 import org.neo4j.ogm.annotation.Property;
+import org.neo4j.ogm.annotation.Relationship;
+
+import java.util.Set;
 
 @Data
 @NoArgsConstructor
@@ -18,6 +21,9 @@ public class BasicEducationProgram {
 
     @Property(name = "NAME")
     private String name;
+
+    @Relationship(type="BASED_ON", direction = Relationship.OUTGOING)
+    private Fgos fgos;
 
     public BasicEducationProgram(String name) {
         this.name = name;

@@ -1,5 +1,6 @@
 package ru.nsu.gulteam.prof_standards.backend.dummy;
 
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -7,17 +8,22 @@ import ru.nsu.gulteam.prof_standards.backend.domain.node.*;
 import ru.nsu.gulteam.prof_standards.backend.domain.repository.*;
 import ru.nsu.gulteam.prof_standards.backend.domain.type.AttestationForm;
 import ru.nsu.gulteam.prof_standards.backend.domain.type.UserRole;
+import ru.nsu.gulteam.prof_standards.backend.service.BlockService;
+import ru.nsu.gulteam.prof_standards.backend.service.TrajectoryService;
+import ru.nsu.gulteam.prof_standards.backend.service.TrajectoryService;
 import ru.nsu.gulteam.prof_standards.backend.service.UserService;
 
 import javax.annotation.PostConstruct;
 import java.util.Arrays;
 import java.util.List;
+import java.util.TreeSet;
 
 @Configuration
+@AllArgsConstructor
 public class DummyDatabaseFiller {
     private MainRepository mainRepository;
     private UserService userService;
-    private TemplateCourseRepository templateCourseRepository;
+    private BlockRepository blockRepository;
     private SkillsRepository skillsRepository;
     private ProfessionalStandardRepository professionalStandardRepository;
     private LaborFunctionRepository laborFunctionRepository;
@@ -29,24 +35,11 @@ public class DummyDatabaseFiller {
     private PasswordEncoder passwordEncoder;
     private FacultyRepository facultyRepository;
     private DepartmentRepository departmentRepository;
-
-    @Autowired
-    public DummyDatabaseFiller(MainRepository mainRepository, UserService userService, TemplateCourseRepository templateCourseRepository, SkillsRepository skillsRepository, ProfessionalStandardRepository professionalStandardRepository, LaborFunctionRepository laborFunctionRepository, KnowledgeRepository knowledgeRepository, GeneralizedLaborFunctionRepository generalizedLaborFunctionRepository, CourseRepository courseRepository, BasicEducationProgramRepository basicEducationProgramRepository, DummyDatabaseFillerProperties dummyDatabaseFillerProperties, PasswordEncoder passwordEncoder, FacultyRepository facultyRepository, DepartmentRepository departmentRepository) {
-        this.mainRepository = mainRepository;
-        this.userService = userService;
-        this.templateCourseRepository = templateCourseRepository;
-        this.skillsRepository = skillsRepository;
-        this.professionalStandardRepository = professionalStandardRepository;
-        this.laborFunctionRepository = laborFunctionRepository;
-        this.knowledgeRepository = knowledgeRepository;
-        this.generalizedLaborFunctionRepository = generalizedLaborFunctionRepository;
-        this.courseRepository = courseRepository;
-        this.basicEducationProgramRepository = basicEducationProgramRepository;
-        this.dummyDatabaseFillerProperties = dummyDatabaseFillerProperties;
-        this.passwordEncoder = passwordEncoder;
-        this.facultyRepository = facultyRepository;
-        this.departmentRepository = departmentRepository;
-    }
+    private FgosRepository fgosRepository;
+    private FgosCourseRequirementRepository fgosCourseRequirementRepository;
+    private CompetenceRepository competenceRepository;
+    private TrajectoryService trajectoryService;
+    private BlockService blockService;
 
     @PostConstruct
     public void fillDatabase() {
@@ -59,9 +52,9 @@ public class DummyDatabaseFiller {
 
         userService.initialize();
 
-
         // Faculties
         Faculty FIT = facultyRepository.save(new Faculty("ФИТ"));
+        Faculty FIJA = facultyRepository.save(new Faculty("ФИЯ"));
 
         // Department
         Department KOI = departmentRepository.save(new Department("Общей информатики"));
@@ -81,8 +74,13 @@ public class DummyDatabaseFiller {
         users.forEach(userService::addNew);
 
         // Lecturers
+        User test = userService.addNew(new User("Василий", "Тестовый", "test", passwordEncoder.encode("test")));
         User parallel = userService.addNew(new User("Андрей", "Параллельный", "parallel", passwordEncoder.encode("parallel")));
         User common = userService.addNew(new User("Дмитрий", "Общий", "common", passwordEncoder.encode("common")));
+
+        departmentRepository.connectToUser(KOI, test);
+        facultyRepository.connectToUser(FIT, test);
+        userService.setRole(test, UserRole.LECTURER);
 
         departmentRepository.connectToUser(KOI, common);
         facultyRepository.connectToUser(FIT, common);
@@ -109,10 +107,52 @@ public class DummyDatabaseFiller {
         facultyRepository.connectToUser(FIT, fitDean);
         userService.setRole(fitDean, UserRole.DEAN_MEMBER);
 
+        User fijaDean = userService.addNew(new User("Александра", "Иностранная", "fija", passwordEncoder.encode("fija")));
+        facultyRepository.connectToUser(FIJA, fijaDean);
+        userService.setRole(fijaDean, UserRole.DEAN_MEMBER);
+
+        // Fgos
+        Fgos fitFgos = new Fgos("09.03.01", "Информатика и вычислительная техника", fitDean);
+        fitFgos.setDisciplineVolumeFrom(160);
+        fitFgos.setPracticeVolumeFrom(20);
+        fitFgos.setAttestationVolumeFrom(9);
+        fitFgos.setSummaryVolume(240);
+        fitFgos = fgosRepository.save(fitFgos);
+
+        // Competence
+        Competence oc1 = competenceRepository.save(new Competence("ОК-1", "Способность использовать основы философских знаний для формирования мировоззренческой позиции"));
+        Competence oc3 = competenceRepository.save(new Competence("ОК-3", "Способность использовать основы экономических знаний в различных сферах деятельности"));
+        Competence opc1 = competenceRepository.save(new Competence("ОПК-3", "Способность инсталлировать программное и аппаратное обеспечение для информационных и автоматизированных систем"));
+
+        fitFgos.setRequireCompetence(new TreeSet<>(Arrays.asList(oc1, oc3, opc1)));
+
+        // Course Requirements
+        FgosCourseRequirement cr1 = fgosCourseRequirementRepository.save(new FgosCourseRequirement("История России"));
+        FgosCourseRequirement cr2 = fgosCourseRequirementRepository.save(new FgosCourseRequirement("Философия"));
+        FgosCourseRequirement cr3 = fgosCourseRequirementRepository.save(new FgosCourseRequirement("Безопасность жизнедеятельности"));
+        FgosCourseRequirement cr4 = fgosCourseRequirementRepository.save(new FgosCourseRequirement("Физическая культура и спорт"));
+
+        fitFgos.setRequireCourses(new TreeSet<>(Arrays.asList(cr1, cr2, cr3, cr4)));
+        fitFgos = fgosRepository.save(fitFgos);
+
+        // Fgos
+        Fgos archFgos = fgosRepository.save(new Fgos("07.03.01", "Архитиектура", fijaDean));
+        archFgos.setDisciplineVolumeFrom(240);
+        archFgos.setPracticeVolumeFrom(30);
+        archFgos.setAttestationVolumeFrom(15);
+        archFgos.setSummaryVolume(300);
+        FgosCourseRequirement archCr1 = fgosCourseRequirementRepository.save(new FgosCourseRequirement("Математический анализ"));
+        archFgos.setRequireCourses(new TreeSet<>(Arrays.asList(archCr1)));
+        archFgos = fgosRepository.save(archFgos);
+
+
         // Professional standard
         ProfessionalStandard webDeveloper = professionalStandardRepository.save(new ProfessionalStandard("Web-developer", "A"));
         ProfessionalStandard microcontrollerDeveloper = professionalStandardRepository.save(new ProfessionalStandard("Microcontroller-developer", "B"));
         ProfessionalStandard sharpDeveloper = professionalStandardRepository.save(new ProfessionalStandard("C# developer", "C"));
+
+        fitFgos.setProfessionalStandards(new TreeSet<>(Arrays.asList(webDeveloper, microcontrollerDeveloper, sharpDeveloper)));
+        fitFgos = fgosRepository.save(fitFgos);
 
         // Generalized labor function
         GeneralizedLaborFunction GW1 = generalizedLaborFunctionRepository.save(new GeneralizedLaborFunction("GW1", "GW1", 6));
@@ -184,37 +224,48 @@ public class DummyDatabaseFiller {
         // Basic Education Program
         BasicEducationProgram educationProgram = basicEducationProgramRepository.save(new BasicEducationProgram("Test education program"));
 
+        educationProgram.setFgos(fitFgos);
+        educationProgram = basicEducationProgramRepository.save(educationProgram);
+
+        basicEducationProgramRepository.connectToFaculty(educationProgram, FIT);
+        basicEducationProgramRepository.connectToCreator(educationProgram, fitDean);
+
         // Courses
-        Course programming = courseRepository.save(new Course(36, 1, AttestationForm.EXAM, "Programming C#"));
-        Course physics = courseRepository.save(new Course(36, 1, AttestationForm.EXAM, "Thermodynamics"));
-        Course english = courseRepository.save(new Course(36, 3, AttestationForm.EXAM, "English language"));
+        Course philosophy = courseRepository.save(new Course(10, 1, AttestationForm.DIFFERENTATED_CREDIT, "Философия", 4));
+        Course programming = courseRepository.save(new Course(20, 1, AttestationForm.EXAM, "Programming C#", 9));
+        Course physics = courseRepository.save(new Course(30, 1, AttestationForm.EXAM, "Thermodynamics", 7));
+        Course english = courseRepository.save(new Course(40, 3, AttestationForm.EXAM, "English language", 8));
         programming = courseRepository.connectToProgram(programming, educationProgram);
         physics = courseRepository.connectToProgram(physics, educationProgram);
         english = courseRepository.connectToProgram(english, educationProgram);
+        philosophy = courseRepository.connectToProgram(philosophy, educationProgram);
 
         // Template courses
-        TemplateCourse t2 = templateCourseRepository.save(new TemplateCourse(36, 2, AttestationForm.EXAM));
-        TemplateCourse t3 = templateCourseRepository.save(new TemplateCourse(36, 3, AttestationForm.EXAM));
-        t2 = templateCourseRepository.connectToProgram(t2, educationProgram);
-        t3 = templateCourseRepository.connectToProgram(t3, educationProgram);
+        Block t2 = blockRepository.save(new Block(50, 2, AttestationForm.EXAM));
+        Block t3 = blockRepository.save(new Block(60, 3, AttestationForm.EXAM));
+        t2 = blockRepository.connectToProgram(t2, educationProgram);
+        t3 = blockRepository.connectToProgram(t3, educationProgram);
 
         // Courses, that based on templates
-        Course createServer = courseRepository.save(new Course(36, 2, AttestationForm.EXAM, "Create web server"));
-        Course writeWebApplication = courseRepository.save(new Course(36, 2, AttestationForm.EXAM, "Write web application"));
-        Course createKeyboard = courseRepository.save(new Course(36, 2, AttestationForm.EXAM, "Create keyboard"));
-        createServer = courseRepository.connectToTemplate(createServer, t2);
+        Course createServer = courseRepository.save(new Course(0, 0, AttestationForm.EXAM, "Create web server", 9));
+        Course writeWebApplication = courseRepository.save(new Course(0, 0, AttestationForm.EXAM, "Write web application", 10));
+        Course createKeyboard = courseRepository.save(new Course(0, 0, AttestationForm.EXAM, "Create keyboard", 8));
+        createServer = courseRepository.connectToBlock(createServer, t2);
         createServer = courseRepository.connectToProgram(createServer, educationProgram);
-        writeWebApplication = courseRepository.connectToTemplate(writeWebApplication, t2);
+        writeWebApplication = courseRepository.connectToBlock(writeWebApplication, t2);
         writeWebApplication = courseRepository.connectToProgram(writeWebApplication, educationProgram);
-        createKeyboard = courseRepository.connectToTemplate(createKeyboard, t2);
+        createKeyboard = courseRepository.connectToBlock(createKeyboard, t2);
         createKeyboard = courseRepository.connectToProgram(createKeyboard, educationProgram);
 
-        Course databaseCreating = courseRepository.save(new Course(36, 3, AttestationForm.EXAM, "Database creating"));
-        Course turboLearning = courseRepository.save(new Course(36, 3, AttestationForm.EXAM, "Turbo learning system"));
-        databaseCreating = courseRepository.connectToTemplate(databaseCreating, t3);
+        Course databaseCreating = courseRepository.save(new Course(0, 0, AttestationForm.EXAM, "Database creating", 10));
+        Course turboLearning = courseRepository.save(new Course(0, 0, AttestationForm.EXAM, "Turbo learning system", 9));
+        databaseCreating = courseRepository.connectToBlock(databaseCreating, t3);
         databaseCreating = courseRepository.connectToProgram(databaseCreating, educationProgram);
-        turboLearning = courseRepository.connectToTemplate(turboLearning, t3);
+        turboLearning = courseRepository.connectToBlock(turboLearning, t3);
         turboLearning = courseRepository.connectToProgram(turboLearning, educationProgram);
+
+        blockService.updateAllCoursesFromBlock(t2);
+        blockService.updateAllCoursesFromBlock(t3);
 
         // Things, what courses develops
         // Programming
@@ -251,5 +302,12 @@ public class DummyDatabaseFiller {
         skillsRepository.connectToCourse(SM1, turboLearning);
         skillsRepository.connectToCourse(SW2, turboLearning);
         knowledgeRepository.connectToCourse(KW2, turboLearning);
+
+
+        courseRepository.findAll().forEach(course->{
+            courseRepository.connectToCreator(course, users.get(3)); // With me c:
+        });
+
+        trajectoryService.updateTrajectories(educationProgram);
     }
 }

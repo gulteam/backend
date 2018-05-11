@@ -21,4 +21,13 @@ public interface FacultyRepository extends GraphRepository<Faculty> {
 
     @Query("START f=node({faculty}), u=node({user}) CREATE (f)-[:CONTAINS]->(u) RETURN f")
     Faculty connectToUser(@Param("faculty")Faculty faculty, @Param("user")User user);
+
+    @Query("START f=node({faculty}), c=node({course}) CREATE (f)-[:RESPONSIBLE_FOR]->(c) RETURN f")
+    Faculty connectToCourse(@Param("faculty")Faculty faculty, @Param("course")Course course);
+
+    @Query("START c=node({course}) MATCH (c)<-[:RESPONSIBLE_FOR]-(f:FACULTY) return f")
+    Faculty getFaculty(@Param("course")Course course);
+
+    @Query("START c=node({course}) MATCH (c)<-[r:CONTAINS]-(f:FACULTY) delete r")
+    void disconnectFromFaculty(@Param("course")Course course);
 }

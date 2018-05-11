@@ -1,0 +1,30 @@
+package ru.nsu.gulteam.prof_standards.backend.domain.node;
+
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import org.neo4j.ogm.annotation.GraphId;
+import org.neo4j.ogm.annotation.NodeEntity;
+import org.neo4j.ogm.annotation.Property;
+
+@Data
+@NoArgsConstructor
+@EqualsAndHashCode(of = "id")
+@NodeEntity(label = "FGOS_COURSE_REQUIREMENT")
+public class FgosCourseRequirement implements Comparable<FgosCourseRequirement> {
+    @GraphId
+    @Property(name = "ID")
+    private Long id;
+
+    @Property(name = "NAME")
+    private String name;
+
+    public FgosCourseRequirement(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public int compareTo(FgosCourseRequirement o) {
+        return (int)(id - o.id);
+    }
+}

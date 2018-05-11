@@ -1,21 +1,20 @@
 package ru.nsu.gulteam.prof_standards.backend.web;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.nsu.gulteam.prof_standards.backend.domain.node.Role;
 import ru.nsu.gulteam.prof_standards.backend.domain.node.Token;
 import ru.nsu.gulteam.prof_standards.backend.domain.node.User;
-import ru.nsu.gulteam.prof_standards.backend.domain.repository.UserRepository;
-import ru.nsu.gulteam.prof_standards.backend.entity.FullUserInfo;
+import ru.nsu.gulteam.prof_standards.backend.domain.type.UserRole;
+import ru.nsu.gulteam.prof_standards.backend.service.FgosService;
+import ru.nsu.gulteam.prof_standards.backend.service.ProgramService;
 import ru.nsu.gulteam.prof_standards.backend.service.SecurityService;
 import ru.nsu.gulteam.prof_standards.backend.service.UserService;
-import ru.nsu.gulteam.prof_standards.backend.web.dto.mapping.RoleMapper;
 import ru.nsu.gulteam.prof_standards.backend.web.dto.mapping.TokenMapper;
 import ru.nsu.gulteam.prof_standards.backend.web.dto.mapping.UserMapper;
 import ru.nsu.gulteam.prof_standards.backend.web.dto.request.AuthData;
 import ru.nsu.gulteam.prof_standards.backend.web.dto.request.RegisterData;
+import ru.nsu.gulteam.prof_standards.backend.web.dto.response.GlobalPermissionsDto;
 import ru.nsu.gulteam.prof_standards.backend.web.dto.response.Message;
 import ru.nsu.gulteam.prof_standards.backend.web.dto.response.UserDto;
 
@@ -24,22 +23,15 @@ import java.util.stream.Collectors;
 
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping(path = "api/v1")
 public class UserController extends BaseController {
     private final UserMapper userMapper;
     private final TokenMapper tokenMapper;
-    private final RoleMapper roleMapper;
     private final SecurityService securityService;
     private final UserService userService;
-
-    @Autowired
-    public UserController(UserMapper userMapper, TokenMapper tokenMapper, RoleMapper roleMapper, SecurityService securityService, UserService userService) {
-        this.userMapper = userMapper;
-        this.tokenMapper = tokenMapper;
-        this.roleMapper = roleMapper;
-        this.securityService = securityService;
-        this.userService = userService;
-    }
+    private final ProgramService programService;
+    private final FgosService fgosService;
 
     @RequestMapping(path = "user", method = RequestMethod.GET)
     public ResponseEntity<?> getMe() {
@@ -68,20 +60,39 @@ public class UserController extends BaseController {
 
     @RequestMapping(path = "allUsers", method = RequestMethod.GET)
     public ResponseEntity<?> getAllUser() {
+        User requester = userService.getUserEntity(securityService.getUserDetails());
         List<User> users = userService.getAllUsers();
-        return ResponseEntity.ok(users.stream().map(userService::getFullUserInfo).map(userMapper::toDto).collect(Collectors.toList()));
+        return ResponseEntity.ok(users.stream().map(u->userService.getFullUserInfo(requester, u)).map(userMapper::toDto).collect(Collectors.toList()));
     }
 
     @RequestMapping(path = "user/{userId}", method = RequestMethod.GET)
     public ResponseEntity<?> getUser(@PathVariable int userId) {
+        User requester = userService.getUserEntity(securityService.getUserDetails());
         User user = userService.getUser(userId);
-        return ResponseEntity.ok(userMapper.toDto(userService.getFullUserInfo(user)));
+        return ResponseEntity.ok(userMapper.toDto(userService.getFullUserInfo(requester, user)));
     }
 
     @RequestMapping(path = "user/{userId}", method = RequestMethod.POST)
     public ResponseEntity<?> updateUser(@PathVariable int userId, @RequestBody UserDto userDto) {
-        User user = userService.updateUser(userMapper.fromDto(userDto), userId);
-        return ResponseEntity.ok(userMapper.toDto(userService.getFullUserInfo(user)));
+        User requester = userService.getUserEntity(securityService.getUserDetails());
+
+        User user = userService.updateUser(requester, userMapper.fromDto(userDto), userId);
+
+        return ResponseEntity.ok(userMapper.toDto(userService.getFullUserInfo(requester, user)));
     }
 
+    @RequestMapping(path = "userPermissions", method = RequestMethod.GET)
+    public ResponseEntity<?> getMyPermissions() {
+        User user = userService.getUserEntity(securityService.getUserDetails());
+
+        GlobalPermissionsDto permissions = new GlobalPermissionsDto(
+                programService.canCreateProgram(user),
+                programService.canReadProgramsList(user),
+                fgosService.canCreateFgos(user),
+                fgosService.canReadFgosList(user),
+                user != null && userService.getUserRole(user).getName().equals(UserRole.ADMINISTRATOR)
+        );
+
+        return ResponseEntity.ok(permissions);
+    }
 }
