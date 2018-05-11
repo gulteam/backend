@@ -147,9 +147,9 @@ public class DummyDatabaseFiller {
 
 
         // Professional standard
-        ProfessionalStandard webDeveloper = professionalStandardRepository.save(new ProfessionalStandard("Web-developer", "A"));
-        ProfessionalStandard microcontrollerDeveloper = professionalStandardRepository.save(new ProfessionalStandard("Microcontroller-developer", "B"));
-        ProfessionalStandard sharpDeveloper = professionalStandardRepository.save(new ProfessionalStandard("C# developer", "C"));
+        ProfessionalStandard webDeveloper = professionalStandardRepository.save(new ProfessionalStandard("Веб-разработчик", "A"));
+        ProfessionalStandard microcontrollerDeveloper = professionalStandardRepository.save(new ProfessionalStandard("Разработчик микроконтроллеров", "B"));
+        ProfessionalStandard sharpDeveloper = professionalStandardRepository.save(new ProfessionalStandard("Системный администратор", "C"));
 
         fitFgos.setProfessionalStandards(new TreeSet<>(Arrays.asList(webDeveloper, microcontrollerDeveloper, sharpDeveloper)));
         fitFgos = fgosRepository.save(fitFgos);
@@ -233,8 +233,8 @@ public class DummyDatabaseFiller {
         // Courses
         Course philosophy = courseRepository.save(new Course(10, 1, AttestationForm.DIFFERENTATED_CREDIT, "Философия", 4));
         Course programming = courseRepository.save(new Course(20, 1, AttestationForm.EXAM, "Programming C#", 9));
-        Course physics = courseRepository.save(new Course(30, 1, AttestationForm.EXAM, "Thermodynamics", 7));
-        Course english = courseRepository.save(new Course(40, 3, AttestationForm.EXAM, "English language", 8));
+        Course physics = courseRepository.save(new Course(30, 1, AttestationForm.EXAM, "Физика", 7));
+        Course english = courseRepository.save(new Course(40, 3, AttestationForm.EXAM, "Английский язык", 8));
         programming = courseRepository.connectToProgram(programming, educationProgram);
         physics = courseRepository.connectToProgram(physics, educationProgram);
         english = courseRepository.connectToProgram(english, educationProgram);
@@ -247,9 +247,9 @@ public class DummyDatabaseFiller {
         t3 = blockRepository.connectToProgram(t3, educationProgram);
 
         // Courses, that based on templates
-        Course createServer = courseRepository.save(new Course(0, 0, AttestationForm.EXAM, "Create web server", 9));
-        Course writeWebApplication = courseRepository.save(new Course(0, 0, AttestationForm.EXAM, "Write web application", 10));
-        Course createKeyboard = courseRepository.save(new Course(0, 0, AttestationForm.EXAM, "Create keyboard", 8));
+        Course createServer = courseRepository.save(new Course(0, 0, AttestationForm.EXAM, "Сетевые технологии", 9));
+        Course writeWebApplication = courseRepository.save(new Course(0, 0, AttestationForm.EXAM, "Теория графов", 10));
+        Course createKeyboard = courseRepository.save(new Course(0, 0, AttestationForm.EXAM, "Бизнес-аналитика", 8));
         createServer = courseRepository.connectToBlock(createServer, t2);
         createServer = courseRepository.connectToProgram(createServer, educationProgram);
         writeWebApplication = courseRepository.connectToBlock(writeWebApplication, t2);
@@ -257,8 +257,8 @@ public class DummyDatabaseFiller {
         createKeyboard = courseRepository.connectToBlock(createKeyboard, t2);
         createKeyboard = courseRepository.connectToProgram(createKeyboard, educationProgram);
 
-        Course databaseCreating = courseRepository.save(new Course(0, 0, AttestationForm.EXAM, "Database creating", 10));
-        Course turboLearning = courseRepository.save(new Course(0, 0, AttestationForm.EXAM, "Turbo learning system", 9));
+        Course databaseCreating = courseRepository.save(new Course(0, 0, AttestationForm.EXAM, "Базы данных", 10));
+        Course turboLearning = courseRepository.save(new Course(0, 0, AttestationForm.EXAM, "Нейросети", 9));
         databaseCreating = courseRepository.connectToBlock(databaseCreating, t3);
         databaseCreating = courseRepository.connectToProgram(databaseCreating, educationProgram);
         turboLearning = courseRepository.connectToBlock(turboLearning, t3);

@@ -21,6 +21,9 @@ public interface SkillsRepository extends GraphRepository<Skills> {
     @Query("START p=node({professionalStandard}) MATCH (s:SKILLS)<-[*0..]-(p) return s")
     Set<Skills> getRequiredForStandard(@Param("professionalStandard")ProfessionalStandard professionalStandard);
 
+    @Query("START b=node({basicEducationProgram}) MATCH (s:SKILLS)<-[*0..]-(b) return s")
+    Set<Skills> getDevelopByBasicEducationProgram(@Param("basicEducationProgram") BasicEducationProgram basicEducationProgram);
+
     @Query("START c=node({course}) MATCH (c)-[:DEVELOPS]->(s:SKILLS) return s")
     Set<Skills> getDevelopsByCourse(@Param("course")Course course);
 }
